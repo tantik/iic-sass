@@ -39,10 +39,43 @@
 ## Что изменилось
 
 - Создан файл `handoff.md` с результатами инспекции.
+- Инициализирован git-репозиторий, создан коммит и ветка `main`.
+- Создана минимальная структура MVP (статические страницы и assets):
+  - `index.html`, `products.html`, `pricing.html`, `security.html`, `company.html`, `contact.html`
+  - Юридические страницы: `privacy.html`, `terms.html`, `commercial-transaction.html`, `security-policy.html`, `data-handling-policy.html`, `support-policy.html`, `billing-policy.html`
+  - Assets: `assets/css/style.css`, `assets/js/main.js`, `assets/images/logo_01.svg`, `assets/images/logo_02.svg`
+
+- Создана резервная копия `old/about` в `backups/old_about_backup_20260620_193126` перед удалением вложенного `.git`.
+
+- Созданы вспомогательные файлы:
+  - `.gitignore`
+  - `README.md`
+
 
 ## Что пробовали и не сработало
 
-- Выполнен `git status` и другие git-команды: операция не сработала — текущая папка не является git-репозиторием. (Сообщение: "fatal: not a git repository").
+- Выполнен `git status` и другие git-команды: в начале текущая папка не была git-репозиторием. После инициализации `git init` выполнен коммит.
+- При коммите git показал предупреждение о вложенном репозитории: `old/about` содержит собственную `.git`. Это добавлено как вложенный репозиторий (режим 160000). При клонировании внешнего репозитория содержимое `old/about` не будет автоматически доступно как часть истории — при необходимости можно заменить на submodule или удалить из индекса (`git rm --cached old/about`).
+
+- Исправлено: создан бэкап `backups/old_about_backup_20260620_193126`, удалён `old/about/.git`, выполнены `git rm --cached old/about` и `git add old/about` — теперь `old/about` добавлен как обычные файлы.
+
+## Текущий коммит
+
+- Commit: `d36069ef70847f0c1cbc3bf88fb5c1b04f2609d0`
+
+-- Дополнительный коммит: `dfe1813849e021c0d33ffc8943fab22fff52c946` (после исправления nested git и добавления вспомогательных файлов)
+
+## Push
+
+- Попытка `git push -u origin main` выполнена, но завершилась ошибкой аутентификации по SSH:
+  - Сообщение: `git@github.com: Permission denied (publickey). fatal: Could not read from remote repository.`
+  - Это означает, что на текущей машине нет подходящего SSH-ключа, привязанного к аккаунту, имеющему доступ к `git@github.com:tantik/iic-sass.git`, или репозиторий/права доступа отсутствуют.
+
+Рекомендуемые действия:
+
+- Локально: убедиться, что SSH-ключ добавлен в GitHub или использовать HTTPS remote (`https://github.com/tantik/iic-sass.git`) и настроить токен/авторизацию.
+- Если хотите, могу изменить remote на HTTPS (`git remote set-url origin https://github.com/tantik/iic-sass.git`) и повторить push, но push всё равно потребует корректной аутентификации (Personal Access Token).
+
 
 ## Риски
 

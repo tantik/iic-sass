@@ -1,11 +1,32 @@
-# IZUMI IT COMPANY — iic-sass (MVP)
+# IZUMI IT COMPANY — SaaS-first static website
 
-This repository contains the static MVP for IZUMI IT COMPANY's SaaS-first website (LINE Business OS).
+This repository contains the static MVP website for IZUMI IT COMPANY.
 
-- Purpose: deliver a simple, production-ready static site (Phase 1) for Japanese SMBs (Workforce, Booking, Custom Automation).
-- Structure: static HTML/CSS/JS in the repo root and `assets/`.
-- `old/` contains the previous site files (reference). Do not delete or modify `/old` content.
-- Legal pages (`privacy.html`, `terms.html`, etc.) are drafts and require legal review.
-- Contact form is static (mailto) in the MVP; backend form handler exists in `old/api/form.php`.
+Main product direction: LINE Business OS.
 
-Next steps: improve Japanese copy, refine responsive design, set up deployment (GitHub Pages / Netlify / Vercel).
+Products:
+- Workforce
+- Booking
+- Custom Automation
+
+The previous public website is used as external reference:
+https://izumiit.com/
+
+Legal pages are drafts and require legal review before production use.
+
+Contact form is static/mailto in the MVP.
+
+## Stack
+
+Static HTML, CSS, and minimal JavaScript. No framework, build system, or backend is included.
+
+## Main pages
+
+- `index.html`
+- `products.html`
+- `pricing.html`
+- `security.html`
+- `company.html`
+- `contact.html`
+
+The `/old` directory is absent and is not required by this website.

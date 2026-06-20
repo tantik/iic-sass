@@ -1,0 +1,18 @@
+.collage__top.img {
+	padding-right: 350px;
+}
+@media (max-width: 1023px){
+	.collage__top.img {
+	    padding-right: 15px;
+	}
+}
+.visual{
+	background: url(../images/video.jpg) no-repeat 50% 50%;
+    background-size: cover;
+}
+
+
+#about .team__video{
+	max-width: 500px;
+	margin: 0 auto;
+}

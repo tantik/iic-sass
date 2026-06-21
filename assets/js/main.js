@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    var revealItems = document.querySelectorAll('.section, .card, .price-card, .trust-card, .hero-panel');
+    var revealItems = document.querySelectorAll('.section, .card, .price-card, .trust-card, .workflow-card, .compare-card, .mockup-card, .hero-panel');
     var observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;

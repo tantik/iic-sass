@@ -38,6 +38,11 @@
 - FAQ переведён на доступные button-based accordion items с `aria-expanded`, плавным раскрытием и независимым открытием нескольких ответов.
 - Добавлены спокойные staged/reveal/hover animations с поддержкой `prefers-reduced-motion`.
 - Meta description главной страницы обновлён под конкретную ценность продукта.
+- В trust section добавлен локальный Biz Partner badge `assets/images/biz_partner_type2.png` со ссылкой на `https://www.biz.ne.jp/company/izumi-it/`.
+- Lancers award оставлен текстовой карточкой: отдельного подтверждённого Lancers logo asset в репозитории нет.
+- Добавлены секции `LINE Business OSで変わること`, `導入前と導入後の違い`, `こんな店舗に向いています`, `向いていないケース`.
+- Добавлены четыре безопасных HTML/CSS mockups для Workforce/Booking без реальных имён, логотипов клиентов и персональных данных.
+- Custom Automation расширен до формулировки для разных事業, а не только店舗.
 
 ## Что пробовали и не сработало
 
@@ -55,6 +60,17 @@
 - Нельзя заявлять `LINE公式認定`, `ISO27001`, `Pマーク`, `法定勤怠対応`, `給与計算対応`.
 - `500社以上` относится только к Web制作・開発領域, не к LINE Business OS.
 - Факты о наградах и認定 следует повторно сверить перед production publication.
+- TODO: Replace mockups with anonymized real screenshots.
+
+Professional screenshot requirements:
+
+- Use anonymized demo data.
+- Remove Mame To Cha logo and real company names before public use.
+- Replace personal names with neutral names: `Staff A`, `Staff B`, `Manager Demo`, `Demo User`, либо явно вымышленные нейтральные японские имена.
+- Remove phone numbers, emails and personal photos.
+- Use consistent browser/device frames and crop to the product area.
+- Export at 2x resolution; prefer WebP, use PNG when simpler.
+- Recommended captures: Workforce staff, Workforce manager, Booking service selection, date/time selection, confirmation and LINE notification.
 
 ## Следующий шаг
 

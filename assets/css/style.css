@@ -122,12 +122,22 @@ h3 {
   font-weight: 800;
   line-height: 1.35;
   letter-spacing: .005em;
-  text-wrap: pretty;
+  text-wrap: balance;
+  line-break: strict;
+  overflow-wrap: normal;
 }
 
 h1 {
   font-size: clamp(2.15rem, 8vw, 4.4rem);
   letter-spacing: -.025em;
+}
+
+.hero-title span {
+  display: block;
+}
+
+.nowrap {
+  white-space: nowrap;
 }
 
 h2 {
@@ -160,6 +170,7 @@ p {
   line-height: 1.4;
   letter-spacing: .15em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .eyebrow::before {
@@ -792,6 +803,15 @@ p {
   font-weight: 700;
 }
 
+.problem-card,
+.workflow-card h3,
+.mockup-card h3,
+.fit-card h2,
+.contact-panel h2 {
+  text-wrap: balance;
+  line-break: strict;
+}
+
 .problem-card::before {
   position: absolute;
   top: 50%;
@@ -886,7 +906,9 @@ p {
 .fit-card h2 { margin-bottom: 1rem; }
 
 .mockup-grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
-.mockup-card { padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-sm); }
+.mockup-card { position: relative; padding: 1rem; overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: linear-gradient(160deg, #fff 72%, var(--color-brand-pale)); box-shadow: var(--shadow-sm); transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition); }
+.mockup-card::before { position: absolute; top: 0; right: 0; left: 0; height: 3px; content: ""; background: linear-gradient(90deg, var(--color-brand), #5bbdb2); }
+.mockup-card:hover { border-color: var(--color-border-strong); box-shadow: var(--shadow-md); transform: translateY(-3px); }
 .mockup-card h3 { margin: 1.1rem .35rem .4rem; }
 .mockup-card>p { margin: 0 .35rem .35rem; color: var(--color-muted); font-size: .88rem; }
 .phone-mockup, .dashboard-mockup { min-height: 235px; padding: .9rem; border: 1px solid #d7e4e1; border-radius: 17px; background: #f7fbfa; box-shadow: inset 0 0 0 5px #fff; }
@@ -1292,6 +1314,27 @@ p {
 .faq.faq-ready .faq-item.is-open .faq-answer { grid-template-rows: 1fr; opacity: 1; }
 .faq.faq-ready .faq-item.is-open .faq-answer p { padding-bottom: 20px; }
 
+.contact-section { background: linear-gradient(180deg, #fff, var(--color-brand-pale)); }
+.contact-intro { display: flex; align-items: center; justify-content: space-between; gap: 2rem; margin-bottom: 2rem; padding: clamp(1.5rem, 4vw, 2.5rem); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-sm); }
+.contact-intro>div { max-width: 680px; }
+.contact-intro p:last-child { margin-bottom: 0; }
+.contact-mail-button { flex: 0 0 auto; }
+.contact-content-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr); gap: 18px; align-items: stretch; }
+.contact-panel { padding: clamp(1.4rem, 3vw, 2rem); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-sm); }
+.contact-panel>h2 { margin-bottom: 1.25rem; }
+.contact-service-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.contact-service-grid article { padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-brand-pale); }
+.contact-service-grid article>span { color: var(--color-brand); font-size: .68rem; font-weight: 900; letter-spacing: .1em; }
+.contact-service-grid h3 { margin: .35rem 0; font-size: 1rem; }
+.contact-service-grid p { margin: 0; color: var(--color-muted); font-size: .82rem; }
+.contact-checklist ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin: 0; padding: 0; list-style: none; }
+.contact-checklist li { position: relative; padding: .65rem .65rem .65rem 1.85rem; border-radius: 10px; background: var(--color-brand-soft); color: var(--color-ink); font-size: .85rem; font-weight: 700; }
+.contact-checklist li::before { position: absolute; left: .7rem; content: "✓"; color: var(--color-brand); font-weight: 900; }
+.contact-note { margin: 1rem 0 0; color: var(--color-muted); font-size: .8rem; }
+.contact-final { margin-top: 18px; padding: clamp(1.5rem, 4vw, 2.4rem); border-radius: var(--radius-lg); background: linear-gradient(135deg, var(--color-brand-deep), #075f57); box-shadow: var(--shadow-md); color: #d9ece9; text-align: center; }
+.contact-final h2 { color: #fff; }
+.contact-final .button { border-color: #fff; background: #fff; color: var(--color-brand-deep); }
+
 .contact-layout {
   align-items: start;
 }
@@ -1609,6 +1652,19 @@ textarea {
   .price-card.featured {
     order: -1;
   }
+
+  .contact-intro {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .contact-mail-button {
+    width: 100%;
+  }
+
+  .contact-content-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 420px) {
@@ -1641,6 +1697,11 @@ textarea {
 
   .price {
     white-space: normal;
+  }
+
+  .contact-service-grid,
+  .contact-checklist ul {
+    grid-template-columns: 1fr;
   }
 }
 

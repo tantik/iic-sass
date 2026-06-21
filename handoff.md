@@ -15,17 +15,16 @@
 - Старый сайт используется только как external reference: https://izumiit.com/
 - Legal pages являются draft и содержат обязательное предупреждение.
 - Contact form остаётся static/mailto: `izumi@izumiit.com`.
-- Текущий этап: Phase 1.7.
+- Live test path: https://izumiit.com/new/
+- Текущий этап: Phase 1.8 visual QA and CRO polish.
 
 ## Файлы, над которыми работали
 
 - `index.html`
+- `products.html`
 - `pricing.html`
-- `security.html`
-- `company.html`
 - `contact.html`
 - `assets/css/style.css`
-- `assets/js/main.js`
 - `handoff.md`
 
 ## Что изменилось
@@ -50,6 +49,14 @@
 - Mobile drawer получил focus management и keyboard focus loop; невидимый backdrop исключён из tab order.
 - FAQ получил progressive fallback: при отключённом JS ответы остаются видимыми, а при включённом работает accordion.
 - Основная навигация pricing/security/company/contact переведена на японские labels.
+- Проверено, что `おすすめ` в локальном `pricing.html` стоит только на Standard для Workforce и Booking; Starter badges отсутствуют. Live `/new/` требует повторного deploy.
+- Hero headline зафиксирован в две строки через отдельные block spans.
+- Добавлены Japanese wrapping rules: balanced headings, strict line breaking и точечный nowrap только для коротких безопасных фраз.
+- Booking copy усилен вокруг 24時間LINE予約, 予約確認・キャンセル導線 и自動リマインド без гарантий результата.
+- Booking Business wording изменён с `no-show対策` на безопасное `来店忘れ対策`.
+- 操作イメージ получил более доверительную формулировку и визуально более глубокие HTML/CSS cards.
+- Contact page переработан в B2B SaaS inquiry layout: consultation cards, checklist, responsive-safe `以下の項目` и явные mailto CTA.
+- Legal/trust safety и утверждённые pricing notes проверены.
 
 ## Что пробовали и не сработало
 
@@ -57,12 +64,15 @@
 - В предыдущей истории SSH push завершался ошибкой `git@github.com: Permission denied (publickey)`. Текущий remote использует HTTPS.
 - Build не требуется: сайт остаётся статическим.
 - Запрошенный commit не создан: `git add -A` завершился ошибкой `fatal: Unable to create 'D:/project/iic-sass/.git/index.lock': Permission denied`. Запрос расширенного разрешения не был подтверждён в доступное время. Push не запускался, поскольку нового commit нет.
+- В Phase 1.8 первая попытка `git add .` вернула `fatal: Unable to create 'D:/project/iic-sass/.git/index.lock': Permission denied`; после подтверждения разрешения staging был успешно повторён.
+- Создание Phase 1.8 commit заблокировано той же политикой записи в `.git`: `git commit -m "Polish Phase 1.8 visual QA and booking copy"` вернул `fatal: Unable to create 'D:/project/iic-sass/.git/index.lock': Permission denied`. Запрос расширенного разрешения не был подтверждён в доступное время; push не запускался.
 
 ## Риски
 
 - Legal pages are draft and require legal review.
 - Backend contact form отсутствует; используется static/mailto.
 - Production deployment не проверен.
+- После push необходимо проверить, что `/new/` обновился и больше не показывает `おすすめ` на Starter.
 - Нельзя заявлять `SaaS導入実績500社` или связывать 500社以上 с LINE Business OS.
 - Нельзя заявлять `LINE公式認定`, `ISO27001`, `Pマーク`, `法定勤怠対応`, `給与計算対応`.
 - `500社以上` относится только к Web制作・開発領域, не к LINE Business OS.
@@ -88,3 +98,4 @@ Professional screenshot requirements:
 - Выполнить юридическую проверку legal pages.
 - Реализовать production contact form.
 - Заменить HTML/CSS mockups на анонимизированные product screenshots после подготовки безопасных demo data.
+- Обновить deploy `/new/` и повторить desktop/mobile visual QA, включая японские переносы и contact CRO layout.

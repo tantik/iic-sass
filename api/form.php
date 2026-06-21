@@ -1,6 +1,6 @@
 <?php
 // LINE Business OS — contact form handler (native PHP, no dependencies).
-// Receives a POST from /new/contact.html, validates server-side,
+// Receives a POST from /contact.html, validates server-side,
 // emails the admin (+Cc) and sends the client an auto-reply.
 // Returns JSON only.
 
@@ -169,7 +169,7 @@ $clientLines = [
     '──────────────',
     '',
     'IZUMI IT COMPANY',
-    'https://izumiit.com/new/',
+    'https://izumiit.com/',
 ];
 $clientBody = implode("\r\n", $clientLines);
 

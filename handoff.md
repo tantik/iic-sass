@@ -61,9 +61,74 @@
 
 ## Commit / Push
 
-- Текущий HEAD: `97696f3` (предыдущий коммит; изменения Phase 1.5 пока не закоммичены).
-- Commit Phase 1.5: не создан из-за запрета записи в `.git`.
-- Push: не запускался, так как новый коммит отсутствует.
+- Phase 1.5 зафиксирован и отправлен: `eeba930 Polish SaaS-first website phase 1.5`.
+- Изменения Phase 1.6 намеренно не закоммичены и не отправлены: ожидается подтверждение пользователя.
+
+## Phase 1.6 — Visual UI/UX Polish
+
+Выполнена визуальная полировка без изменения позиционирования, стека, тарифной логики или юридических формулировок.
+
+Файлы, изменённые в Phase 1.6:
+
+- `assets/css/style.css`
+- `index.html`
+- `handoff.md`
+
+Изменения дизайн-системы:
+
+- расширены CSS variables для цветов, отступов, радиусов, теней и анимаций;
+- усилена японская типографика, иерархия заголовков и ритм секций;
+- улучшены sticky header, навигация, hero, CTA и footer;
+- переработаны карточки проблем, продуктов, функций и информационные блоки;
+- улучшена визуальная иерархия тарифов, выделение рекомендуемого плана и читаемость примечаний;
+- улучшены FAQ, формы, legal/disclaimer blocks, focus states и reduced-motion режим;
+- добавлены mobile-first ограничения, внутренний горизонтальный scroll навигации и безопасные grid-колонки без переполнения страницы.
+
+Ограничения и оставшиеся риски:
+
+- browser visual QA не удалось выполнить из-за недоступности локального browser connection; рекомендуется проверить desktop и mobile rendering вручную;
+- backend и framework не добавлялись;
+- production deployment не проверен;
+- юридическая проверка production-версии не проводилась, legal pages остаются черновиками.
+
+## Phase 1.7 — Premium Brand / UI Polish
+
+Phase 1.7 продолжает незакоммиченные изменения Phase 1.6. Позиционирование, тарифная логика и юридические формулировки не изменялись.
+
+Файлы, изменённые в Phase 1.7:
+
+- `index.html`
+- `products.html`
+- `pricing.html`
+- `security.html`
+- `company.html`
+- `contact.html`
+- `assets/css/style.css`
+- `assets/js/main.js`
+- `handoff.md`
+
+Brand assets:
+
+- Использован существующий локальный wordmark `assets/images/logo_01.svg` в header всех основных страниц.
+- Использован существующий локальный wordmark `assets/images/logo_02.svg` в footer всех основных страниц.
+- Эти SVG ранее были перенесены из материалов старого сайта и обеспечивают визуальную преемственность бренда.
+- Новые assets не скачивались: автоматический доступ к `https://izumiit.com/` был заблокирован, а необходимые logo assets уже присутствовали локально.
+- Hotlink отсутствует; все ссылки на изображения относительные и локальные.
+
+Что улучшено:
+
+- Добавлено доступное mobile hamburger menu с `aria-expanded`, `aria-controls`, закрытием по повторному нажатию, ссылке, Escape и desktop resize.
+- Hero дополнен компактными product badges и CSS-схемой `LINE → Staff / Customer → Dashboard → Operation` без фальшивых screenshots или client logos.
+- Header переведён на единый glass/sticky layout, footer основных страниц — на единый brand/navigation layout.
+- Добавлены лёгкие entrance/reveal animations на CSS и IntersectionObserver. Контент остаётся видимым при отказе JS; `prefers-reduced-motion` учитывается.
+- Уплотнена mobile-композиция, устранена горизонтальная навигационная лента и добавлено управление overflow.
+
+Ограничения и безопасность:
+
+- Framework, backend, build tools, CDN и внешние библиотеки не добавлялись.
+- Новые legal/security claims не добавлялись; legal draft disclaimers сохранены.
+- Browser visual QA выполнить не удалось из-за недоступности browser connection. Рекомендуется ручная проверка desktop/mobile перед commit.
+- Изменения Phase 1.7 не закоммичены и не отправлены.
 
 ## Риски
 

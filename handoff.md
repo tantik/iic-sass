@@ -7,7 +7,7 @@
 ## Текущее состояние
 
 - Стек: static HTML/CSS/JS, без framework, build system и backend.
-- Текущая ветка: `tools/uiux-pro-max-test` (НЕ `main`). См. раздел Phase 1.9D — branch/deploy status.
+- Текущая ветка: `main`. Phase 1.9D (`486d496 Polish Phase 1.9D trust pages`) **уже влит в `main`** (и `main`, и `tools/uiux-pro-max-test` указывают на `486d496`). `main` синхронизирован с `origin/main`.
 - Remote: `origin https://github.com/tantik/iic-sass.git`.
 - Основные страницы: `index.html`, `products.html`, `pricing.html`, `security.html`, `company.html`, `contact.html`.
 - Legal pages: `privacy.html`, `terms.html`, `commercial-transaction.html`, `security-policy.html`, `data-handling-policy.html`, `support-policy.html`, `billing-policy.html`.
@@ -16,7 +16,69 @@
 - Legal pages являются draft и содержат обязательное предупреждение.
 - Contact form остаётся static/mailto: `izumi@izumiit.com`.
 - Live test path: https://izumiit.com/new/
-- Текущий этап: Phase 1.9D — Trust / Security / Company / Contact polish + safe hero refinements.
+- Текущий этап: Phase 1.9E — Company / Contact final polish + global mobile QA.
+
+## Phase 1.9E — Company / Contact final polish + global QA
+
+### Branch / deploy status (preflight)
+
+- Работа велась на `main` (целевая ветка; preflight: `git status` чисто кроме untracked tooling-папок, `main` = `origin/main` = `486d496`).
+- **Phase 1.9D подтверждённо влит в `main`** (`486d496 Polish Phase 1.9D trust pages`); `tools/uiux-pro-max-test` указывает на тот же коммит.
+- Untracked (НЕ коммитятся): `.cursor/`, `design-test/`, `design-test-a/`. Они добавлены в `.gitignore`, чтобы исключить случайный commit.
+- `cursor.svg` / `assets/images/cursor.svg` — отсутствует. Custom cursor НЕ реализован. Удалять нечего.
+- Временных скриншотов / debug-файлов в working tree нет.
+
+### Файлы изменены в Phase 1.9E
+
+- `company.html` — final trust polish: hero chips (`2018年設立 / Web制作・開発領域 / LINE連携SaaS / 小規模店舗向け`); заголовок trust-секции → `Web制作・開発で培った信頼を、店舗向けSaaSへ。`; тексты trust-карточек выровнены под ТЗ (500社以上 явно привязано к Web制作・開発領域 + дисклеймер про LINE Business OS); approach заголовок → `導入しやすい形で、現場に合わせて整える` + короткие названия карточек (`小さく始める` и т.д.); CTA subcopy обновлён.
+- `contact.html` — conversion polish: hero chips (`1店舗から相談可能 / サービス選びから相談 / 個別見積り対応 / フォーム準備中`); main contact card теперь с prominent email `izumi@izumiit.com` + CTA `メールで相談する` и честным текстом про準備中 формы; consultation card 05/06 тексты выровнены под ТЗ; добавлена секция `お問い合わせ後の流れ` (3 шага через `.workflow-grid`/`.workflow-card`) + осторожная заметка про見積り/利用規約; bottom CTA получил 2 кнопки (`メールで相談する` + `料金を見る`); header nav CTA унифицирован → `導入相談する` (был `メールする`).
+- `assets/css/style.css` — добавлен блок «Company / Contact final polish (Phase 1.9E)»: `.page-chips` (нейтральный центрированный ряд чипов для trust-hero), `.contact-intro-action` + `.contact-mail-address` (prominent email + CTA stack, mobile-safe), `.contact-steps`. Переиспользованы существующие компоненты (`.workflow-grid`, `.trust-card`, `.contact-*`).
+- `.gitignore` — добавлены `.cursor/`, `design-test/`, `design-test-a/`.
+- `handoff.md`.
+
+### Global consistency polish (Task 4)
+
+- Nav labels идентичны на всех 6 страницах (`サービス / 料金 / セキュリティ / 会社情報 / お問い合わせ` + header CTA `導入相談する` → contact.html). `aria-current="page"` корректно стоит на текущей странице каждой страницы.
+- Footer links следуют консистентному паттерну self-exclusion (каждая страница опускает ссылку на саму себя); legal footer (7 ссылок) виден на всех страницах.
+- CTA wording консистентен: `導入相談する / 料金を見る / サービスを見る` (+ контекстный `メールで相談する` на contact).
+- Page titles: контентные страницы используют `…｜LINE Business OS｜IZUMI IT COMPANY`; company.html сознательно `会社情報｜IZUMI IT COMPANY` (страница о бренде компании, а не только о SaaS).
+- Принятые страницы (index/products/pricing/security) НЕ редизайнились.
+
+### Mobile QA (CDP Emulation.setDeviceMetricsOverride, через локальный http.server)
+
+`document.documentElement.scrollWidth === clientWidth` на всех проверенных ширинах. Горизонтального скролла нет (`over = 0`).
+
+| width | index | products | pricing | security | company | contact |
+|------|------|------|------|------|------|------|
+| 320 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 375 | — | — | — | — | 0 | — |
+| 390 | — | — | — | — | 0 | — |
+| 430 | — | — | — | — | 0 | 0 |
+| 768 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 1440 | — | — | — | — | 0 (1425=1425) | 0 (1425=1425) |
+
+- Изменённые страницы (company, contact) проверены на всех 6 ширинах; принятые страницы — на 320 и 768 (наиболее overflow-prone).
+- Mobile menu (company, 390px): открывается (`aria-expanded=true`, `is-open`, `body.menu-open`), drawer `position:fixed` (прижат к вьюпорту, не уезжает вверх при скролле — body locked), overflow 0, закрывается корректно. Скриншот открытого drawer подтвердил active-state на `会社情報`. Header/nav/main.js общие для всех страниц.
+- CTA-кнопки, pricing-карточки, footer-ссылки, header logo/nav не переполняются. Chips переносятся корректно.
+- Custom cursor отсутствует. Framework/build/dependencies не добавлялись.
+
+### Forbidden claims grep (Task 5)
+
+- Grep по `*.html` (`LINE公式認定 / ISO27001 / Pマーク / 法定勤怠対応 / 給与計算対応 / 税務対応 / 労務管理対応 / 売上保証 / no-show完全防止 / SaaS導入500社 / LINE Business OS 導入500社 / 1200+ / 99% / 4.8/5 / 削減工数 / 導入店舗数`): **0 совпадений**.
+- `給与計算 / 法定勤怠 / 税務 / 労務管理` встречаются только в exclusion/disclaimer контексте (products L73, pricing L202, index FAQ + «向いていないケース»). Позитивных claim нет.
+- `500社以上` — только в контексте Web制作・開発領域 (index hero chip + index trust card + company trust card с явным дисклеймером «LINE Business OSの導入実績を示すものではありません»).
+- Security НЕ заявляет сертификаций (явный дисклеймер «特定の認証取得や法令への適合を保証するものではありません»).
+
+### Остаточные риски Phase 1.9E
+
+- Browser QA выполнен через Chromium CDP emulation; финальную проверку на реальном iOS Safari желательно повторить после deploy.
+- Contact form по-прежнему static/mailto (честно указано «準備中»); production form — будущая работа.
+- Company/contact — draft японский контент, требует финального ревью и юридической сверки перед production.
+- Commit создан на `main`; push НЕ выполнялся (ожидает явного подтверждения пользователя).
+
+### Следующий рекомендуемый этап
+
+- Phase 2.0 — реальная contact form (backend/serverless) + замена HTML/CSS mockups на анонимизированные product screenshots; deploy `/new/` и финальный mobile QA на реальном устройстве; ревью японского текста и юридическая сверка.
 
 ## Phase 1.9D — Trust pages polish (security / company / contact) + safe hero chips
 

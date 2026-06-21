@@ -15,3 +15,8 @@ old/**/*.tar
 old/**/*.gz
 old/**/*.sql
 old/**/*.sqlite
+
+# Local tooling / scratch (never commit)
+.cursor/
+design-test/
+design-test-a/

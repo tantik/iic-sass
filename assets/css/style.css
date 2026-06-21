@@ -2378,3 +2378,72 @@ textarea {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* ============================================================
+   Company / Contact final polish (Phase 1.9E)
+   ============================================================ */
+
+/* Neutral, centered chip row for trust-page heroes */
+.page-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 10px;
+  margin: 1.6rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.page-chips li {
+  padding: 7px 15px;
+  border: 1px solid rgba(22, 54, 90, .16);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, .82);
+  color: var(--color-brand-dark);
+  font-size: .8rem;
+  font-weight: 700;
+  line-height: 1.4;
+  box-shadow: 0 2px 8px rgba(11, 18, 32, .04);
+}
+
+/* Contact intro: prominent email address + CTA stack */
+.contact-intro-action {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: .75rem;
+}
+
+.contact-mail-address {
+  color: var(--color-brand-dark);
+  font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+  font-weight: 800;
+  letter-spacing: .01em;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.contact-mail-address:hover {
+  color: var(--color-brand);
+  text-decoration: underline;
+}
+
+/* After-contact steps reuse workflow cards inside a contact panel */
+.contact-steps {
+  margin-top: 18px;
+}
+
+.contact-steps > h2 {
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .contact-intro-action {
+    align-items: stretch;
+  }
+
+  .contact-mail-address {
+    text-align: center;
+  }
+}

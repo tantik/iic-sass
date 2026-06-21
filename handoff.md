@@ -16,16 +16,14 @@
 - Legal pages являются draft и содержат обязательное предупреждение.
 - Contact form остаётся static/mailto: `izumi@izumiit.com`.
 - Live test path: https://izumiit.com/new/
-- Текущий этап: Phase 1.8 visual QA and CRO polish.
+- Текущий этап: Phase 1.8 QA polish and CRO polish.
 
 ## Файлы, над которыми работали
 
-- `index.html`
-- `products.html`
 - `pricing.html`
-- `contact.html`
 - `assets/css/style.css`
 - `handoff.md`
+- (ранее в этой фазе: `index.html`, `products.html`, `contact.html`)
 
 ## Что изменилось
 
@@ -53,7 +51,12 @@
 - Hero headline зафиксирован в две строки через отдельные block spans.
 - Добавлены Japanese wrapping rules: balanced headings, strict line breaking и точечный nowrap только для коротких безопасных фраз.
 - Booking copy усилен вокруг 24時間LINE予約, 予約確認・キャンセル導線 и自動リマインド без гарантий результата.
-- Booking Business wording изменён с `no-show対策` на безопасное `来店忘れ対策`.
+- Pricing recommended badge подтверждён только на Standard (Workforce и Booking); Starter/Business/Enterprise без `おすすめ`.
+- Booking Business wording изменён на безопасное `リマインド強化` (без `no-show対策` / небезопасных формулировок).
+- Hero controlled 2-line headline сохранён через block spans, desktop max font-size доведён до 60px через `.hero-title { clamp(42px, 5vw, 60px); }`.
+- `.problem-card` текст уменьшен до 15px без уменьшения заголовков.
+- `.price-card::before` (верхняя линия карточки) скорректирован на `left: 3px; right: 3px;`.
+- Добавлены utility-классы `.text-balance` и `.text-nowrap-desktop` (с mobile fallback ≤640px) для аккуратных японских переносов.
 - 操作イメージ получил более доверительную формулировку и визуально более глубокие HTML/CSS cards.
 - Contact page переработан в B2B SaaS inquiry layout: consultation cards, checklist, responsive-safe `以下の項目` и явные mailto CTA.
 - Legal/trust safety и утверждённые pricing notes проверены.

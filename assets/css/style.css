@@ -132,12 +132,30 @@ h1 {
   letter-spacing: -.025em;
 }
 
+.hero-title {
+  font-size: clamp(42px, 5vw, 60px);
+}
+
 .hero-title span {
   display: block;
 }
 
 .nowrap {
   white-space: nowrap;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.text-nowrap-desktop {
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .text-nowrap-desktop {
+    white-space: normal;
+  }
 }
 
 h2 {
@@ -800,6 +818,7 @@ p {
   align-items: center;
   padding-left: 62px;
   color: var(--color-ink);
+  font-size: 15px;
   font-weight: 700;
 }
 
@@ -1090,8 +1109,8 @@ p {
 .price-card::before {
   position: absolute;
   top: 0;
-  right: 0;
-  left: 0;
+  right: 3px;
+  left: 3px;
   height: 4px;
   content: "";
   border-radius: var(--radius-md) var(--radius-md) 0 0;

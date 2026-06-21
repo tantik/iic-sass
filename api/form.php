@@ -1,13 +1,19 @@
 <?php
 // LINE Business OS — contact form handler (native PHP, no dependencies).
-// Receives a POST from /contact.html, validates server-side, then sends two
-// separate admin emails (primary izumi@ + dedicated Gmail backup copy) and a
-// client auto-reply. Success ({ok:true}) requires BOTH admin emails to be
-// accepted by mail(); the auto-reply is best-effort. Returns JSON only.
+// Receives a POST from /contact.html, validates server-side, then sends the
+// admin notification, a best-effort Gmail backup copy, and a best-effort client
+// auto-reply. Success ({ok:true}) requires ONLY the primary admin email
+// (izumi@izumiit.com) to be accepted by mail(); the backup copy and the
+// auto-reply are best-effort and never block the user-facing result.
+// Returns JSON only.
 
 declare(strict_types=1);
 
 mb_internal_encoding('UTF-8');
+// Force UTF-8 output for mb_send_mail (headers + body) when available.
+if (function_exists('mb_language')) {
+    @mb_language('uni');
+}
 
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
@@ -26,7 +32,6 @@ const ADMIN_SUBJECT       = '【LINE Business OS】導入相談フォーム';
 const ADMIN_BACKUP_SUBJECT= '【LINE Business OS】導入相談フォーム（コピー）';
 const CLIENT_SUBJECT      = 'お問い合わせを承りました｜IZUMI IT COMPANY';
 const MESSAGE_MAX         = 1200;
-const MIN_FILL_MS         = 3000;
 // ---------------------------------------------------------------------------
 
 /** Send a JSON response and stop. */
@@ -50,6 +55,33 @@ function clean_text(string $value): string
     return trim($value);
 }
 
+/**
+ * Send a UTF-8 plain-text email. Prefers mb_send_mail (which encodes the
+ * Japanese subject/body correctly) and falls back to mail() with a
+ * MIME-encoded subject. $baseHeaders should contain only From / Reply-To.
+ */
+function send_mail(string $to, string $subjectRaw, string $body, array $baseHeaders): bool
+{
+    if (function_exists('mb_send_mail')) {
+        // mb_send_mail encodes the subject/body and emits a UTF-8
+        // Content-Type itself (mb_language 'uni'); do not add one here.
+        return @mb_send_mail($to, $subjectRaw, $body, implode("\r\n", $baseHeaders));
+    }
+
+    $headers = array_merge($baseHeaders, [
+        'MIME-Version: 1.0',
+        'Content-Type: text/plain; charset=UTF-8',
+        'Content-Transfer-Encoding: 8bit',
+    ]);
+
+    return @mail(
+        $to,
+        mb_encode_mimeheader($subjectRaw, 'UTF-8'),
+        $body,
+        implode("\r\n", $headers)
+    );
+}
+
 // Accept POST only.
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
     header('Allow: POST');
@@ -61,15 +93,9 @@ if (clean_text((string)($_POST['website'] ?? '')) !== '') {
     respond(200, ['ok' => true]);
 }
 
-// Time trap: submissions faster than MIN_FILL_MS are treated as spam.
-$startedAt = (string)($_POST['started_at'] ?? '');
-if ($startedAt !== '' && ctype_digit($startedAt)) {
-    $nowMs   = (int) round(microtime(true) * 1000);
-    $elapsed = $nowMs - (int) $startedAt;
-    if ($elapsed >= 0 && $elapsed < MIN_FILL_MS) {
-        respond(200, ['ok' => true]);
-    }
-}
+// Note: `started_at` is intentionally NOT used to block or silently drop
+// submissions. A time trap caused legitimate fast submissions (real users and
+// QA testers) to be dropped without sending, making the form look broken.
 
 // Collect fields.
 $name        = clean_text((string)($_POST['name'] ?? ''));
@@ -116,7 +142,7 @@ if (mb_strlen($message) > MESSAGE_MAX) {
 }
 
 if (count($errors) > 0) {
-    respond(422, ['ok' => false, 'message' => 'invalid_input']);
+    respond(422, ['ok' => false, 'message' => 'validation_error']);
 }
 
 // Build the admin email body (plain text).
@@ -177,47 +203,32 @@ $clientLines = [
 ];
 $clientBody = implode("\r\n", $clientLines);
 
-// Encode subjects for non-ASCII safety.
-$adminSubject       = mb_encode_mimeheader(ADMIN_SUBJECT, 'UTF-8');
-$adminBackupSubject = mb_encode_mimeheader(ADMIN_BACKUP_SUBJECT, 'UTF-8');
-$clientSubject      = mb_encode_mimeheader(CLIENT_SUBJECT, 'UTF-8');
-$fromHeader         = mb_encode_mimeheader(FROM_NAME, 'UTF-8') . ' <' . FROM_EMAIL . '>';
-$replyToAdmin       = clean_header($email);
+$fromHeader   = mb_encode_mimeheader(FROM_NAME, 'UTF-8') . ' <' . FROM_EMAIL . '>';
+$replyToAdmin = clean_header($email);
 
-// Shared admin headers. Reply-To is the submitted customer email so that a
-// reply from either admin mailbox goes back to the customer. No Cc is used;
-// the Gmail backup mailbox receives its own dedicated message below.
+// Admin headers: Reply-To is the submitted customer email so a reply from the
+// admin mailbox goes back to the customer.
 $adminHeaders = [
     'From: ' . $fromHeader,
     'Reply-To: ' . $replyToAdmin,
-    'MIME-Version: 1.0',
-    'Content-Type: text/plain; charset=UTF-8',
-    'Content-Transfer-Encoding: 8bit',
 ];
-$adminHeaderString = implode("\r\n", $adminHeaders);
 
-// 1) Primary admin mailbox.
-$primarySent = @mail(ADMIN_TO, $adminSubject, $adminBody, $adminHeaderString);
+// 1) Primary admin mailbox — the ONLY blocking email.
+$primarySent = send_mail(ADMIN_TO, ADMIN_SUBJECT, $adminBody, $adminHeaders);
 
-// 2) Dedicated backup/admin copy (separate message, not a Cc).
-$backupSent = @mail(ADMIN_BACKUP_TO, $adminBackupSubject, $adminBody, $adminHeaderString);
-
-// Only report success if BOTH admin messages were accepted by mail().
-if (!$primarySent || !$backupSent) {
+if (!$primarySent) {
     respond(500, ['ok' => false, 'message' => 'send_failed']);
 }
 
-// 3) Client auto-reply. Failure here must not block admin success.
-// Note: if this returns false the customer simply does not get a confirmation
-// copy; we intentionally avoid logging the failure with any PII to disk.
+// 2) Dedicated Gmail backup/admin copy — best-effort only. A failure here must
+// not block user success and is never surfaced to the user or logged with PII.
+send_mail(ADMIN_BACKUP_TO, ADMIN_BACKUP_SUBJECT, $adminBody, $adminHeaders);
+
+// 3) Client auto-reply — best-effort only. Reply-To routes replies to izumi@.
 $clientHeaders = [
     'From: ' . $fromHeader,
     'Reply-To: ' . REPLY_TO_CLIENT,
-    'MIME-Version: 1.0',
-    'Content-Type: text/plain; charset=UTF-8',
-    'Content-Transfer-Encoding: 8bit',
 ];
-
-@mail($email, $clientSubject, $clientBody, implode("\r\n", $clientHeaders));
+send_mail($email, CLIENT_SUBJECT, $clientBody, $clientHeaders);
 
 respond(200, ['ok' => true]);

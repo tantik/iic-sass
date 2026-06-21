@@ -2599,3 +2599,88 @@ textarea {
     text-align: center;
   }
 }
+
+/* ============================================================
+   Home onboarding flow (Phase 2.1) — 導入までの流れ
+   ============================================================ */
+.onboarding-steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin: 0 0 clamp(1.5rem, 4vw, 2.25rem);
+  padding: 0;
+  list-style: none;
+}
+
+.onboarding-step {
+  position: relative;
+  min-width: 0;
+  padding: 1.5rem 1.4rem 1.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: linear-gradient(150deg, #fff 62%, var(--color-brand-pale));
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+
+.onboarding-step::before {
+  position: absolute;
+  top: 0;
+  left: 1.4rem;
+  width: 36px;
+  height: 3px;
+  content: "";
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(90deg, var(--color-line), var(--color-brand));
+}
+
+.onboarding-step:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.onboarding-num {
+  display: inline-grid;
+  width: 40px;
+  height: 40px;
+  margin-bottom: .9rem;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--gradient-navy);
+  color: #fff;
+  font-size: .95rem;
+  font-weight: 900;
+  box-shadow: 0 8px 16px rgba(11, 18, 32, .2);
+}
+
+.onboarding-step h3 {
+  margin: 0 0 .5rem;
+  font-size: clamp(1.05rem, 3vw, 1.2rem);
+}
+
+.onboarding-step p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: .88rem;
+  line-height: 1.75;
+}
+
+.onboarding-note {
+  margin: 0 0 1.5rem;
+  color: var(--color-muted);
+  font-size: .82rem;
+  text-align: center;
+}
+
+@media (min-width: 560px) {
+  .onboarding-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 820px) {
+  .onboarding-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

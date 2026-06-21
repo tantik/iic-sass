@@ -16,7 +16,69 @@
 - Legal pages являются draft и содержат обязательное предупреждение.
 - Contact form: **Phase 2.0** — реальная отправка через native PHP (`api/form.php`, PHP `mail()`), без backend-framework/зависимостей/БД. Admin To: `izumi@izumiit.com`, Cc: `konstantin.chvykov@gmail.com`; auto-reply клиенту на его email. (Ранее Phase 1.9F: `mailto:`.)
 - Live test path: https://izumiit.com/new/ (форма `POST` → `/new/api/form.php`).
-- Текущий этап: Phase 2.0 — Real PHP contact form for LINE Business OS.
+- Текущий этап: Phase 2.1 — Home導入flow block + privacy page + final live QA prep.
+
+## Phase 2.1 — Homepage onboarding flow + privacy page
+
+### Branch / deploy status (preflight, TASK 0)
+
+- Работа на `main`. Перед редактированием `git status` clean. `main` = `origin/main` (оба включают `2fdabbc Add PHP contact form for LINE Business OS`; `git fetch origin` + `git log -1 origin/main` → `2fdabbc`).
+- `.cursor/` ignored и не трекается; `design-test/` и `design-test-a/` в `.gitignore` и не трекаются (`git ls-files` показывает только production-файлы). Временных скриншотов/debug-файлов в трекинге нет.
+- Remote: `origin https://github.com/tantik/iic-sass.git` (HTTPS).
+
+### Homepage onboarding flow (TASK 1)
+
+- Добавлен блок **`導入までの流れ`** на главной (`index.html`), отдельная страница flow НЕ создавалась; старый `flow.html` в навигацию НЕ добавлялся; Web制作-формулировки (発注 / 着手金 / 納品 / 残金 / 制作費の50%) НЕ использовались — текст 100% про LINE Business OS / SaaS導入.
+- **Точное размещение**: новая секция `<section class="section onboarding-section" id="onboarding">` стоит **после** `pilot-section` («まずはデモで、自店舗に合うか確認できます。») и **перед** FAQ-секцией («導入前に確認したいこと»).
+- Структура: eyebrow `導入ステップ`, h2 `導入までの流れ`, subcopy `はじめての導入でも、現在の運用を確認しながら、必要なサービスだけを小さく始められます。`, затем `<ol class="onboarding-steps">` из 6 шагов (1 導入相談 / 2 運用確認 / 3 サービス選定 / 4 デモ・見積り確認 / 5 初期設定・テスト運用 / 6 正式運用・改善) с точными текстами из ТЗ.
+- Заметка: `正式な料金・契約条件は、個別のお見積りおよび利用規約をご確認いただきます。` + CTA-ряд: `導入相談する` → contact.html, `料金を見る` → pricing.html.
+- CSS (новый блок «Home onboarding flow (Phase 2.1)» в конце `style.css`): `.onboarding-steps` (1 col → 2 col ≥560px → 3 col ≥820px), `.onboarding-step` (soft card, navy number badge `.onboarding-num`, тонкий green→navy top-accent через `::before`), `.onboarding-note`. Mint/green/navy, copper не использован, fake-метрик/логотипов/скриншотов нет. Reveal-анимация секции работает через существующий `.section`-observer.
+
+### Privacy / legal link safety (TASK 2)
+
+- `/new/privacy.html` **уже существовал** (tracked) — новая страница не дублировалась. Существующая draft-страница **дополнена** до требуемой структуры (она же — цель consent-ссылки формы): intro, `取得する情報` (お名前 / 会社名・店舗名 / メールアドレス / 電話番号 / 業種・店舗数・スタッフ数 / お問い合わせ内容 / LINE Business OS導入相談に関する情報), `利用目的`, `第三者提供`, `管理`, `お問い合わせ窓口` (`mailto:izumi@izumiit.com`), `改定`. Сохранён осторожный тон + 2 заметки: «ドラフト…法務確認後に更新» и «正式な法的確認が必要な場合は、専門家にご確認ください。». Title → `プライバシーポリシー`.
+- Все ссылки на privacy резолвятся (относительный путь `privacy.html` → `/new/privacy.html`): footer-legal на index/products/pricing/security/company/contact + consent-чекбокс формы (`<a href="privacy.html">`). Рендер privacy.html подтверждён в браузере (все секции на месте, mailto и «← ホームへ戻る» работают, overflow 0 @320px).
+
+### Contact PHP form readiness (TASK 3)
+
+- `contact.html` form `action="api/form.php"` ✓; `api/form.php` существует (резолвится в `/new/api/form.php`) ✓; JS `fetch(contactForm.action)` использует относительный путь ✓; success показывается **только** при `status 200 && data.ok === true` ✓; error при провале ✓; прямой fallback `izumi@izumiit.com` виден (intro + lead + заметка под формой) ✓; `privacy_consent` required (HTML `required` + JS-проверка + PHP-проверка) ✓; mailto-only главного поведения нет (форма постит в PHP) ✓. PHP-логика НЕ менялась (багов не найдено).
+- **`php -l` локально НЕ выполнен: PHP не установлен** (`where.exe php` → not found). PHP-runtime/синтаксис нужно проверить на сервере.
+
+### Mobile / overflow QA (TASK 6, CDP Emulation + локальный http.server :8771)
+
+`document.documentElement.scrollWidth === clientWidth`, горизонтального скролла нет:
+
+| width | index.html | privacy.html |
+|------|------|------|
+| 320 | 0 (320=320) | 0 (320=320) |
+| 375 | 0 (375=375) | — |
+| 390 | 0 (390=390) | — |
+| 430 | 0 (430=430) | — |
+| 768 | 0 (753=753) | — |
+| 1440 | 0 (1425=1425) | — |
+
+- Новый flow-блок на мобиле (390px, скриншот) стекается в одну колонку чисто, карточки full-width, не переполняются; на desktop (скриншот) — аккуратная сетка 3×2 с navy-бейджами и green→navy акцентом. CTA-кнопки/footer/контент не переполняются. Mobile-меню и contact-форма не менялись (поведение Phase 2.0 сохранено). Custom cursor нет; framework/build/dependencies не добавлялись.
+
+### Forbidden claims grep (TASK 5)
+
+- Grep по `*.html`/`*.php` (`LINE公式認定 / ISO27001 / Pマーク / 法定勤怠対応 / 給与計算対応 / 税務対応 / 労務管理対応 / 売上保証 / no-show完全防止 / SaaS導入500社 / LINE Business OS 導入500社 / 1200+ / 99% / 4.8/5 / 削減工数 / 導入店舗数`): **0 совпадений**.
+- `給与計算 / 法定勤怠 / 税務 / 労務管理` — только exclusion/disclaimer контекст (index L96 «向いていないケース», index L112 notice, index FAQ L223, products L73, pricing L202). Позитивных claim нет.
+- `500社以上` — только Web制作・開発領域 (index hero chip + index trust card + company trust card с дисклеймером). Security сертификаций не заявляет.
+
+### Live email test результат
+
+- **НЕ выполнен** (требует live deploy `/new/` + реальный почтовый сервер; PHP локально недоступен). После push нужно: отправить тестовую заявку с live `/new/contact.html`; подтвердить получение на `izumi@izumiit.com` + Cc `konstantin.chvykov@gmail.com`; подтвердить auto-reply на тестовый email; проверить спам; убедиться, что success только при `{ ok:true }`.
+
+### Остаточные риски Phase 2.1
+
+- Доставляемость PHP `mail()` не проверена (SPF/DKIM/DMARC, From на внешнем домене) — возможен спам/отклонение; при проблемах сменить `FROM_EMAIL`.
+- PHP-синтаксис не линтован локально (нет PHP) — проверить на сервере.
+- `privacy.html` и прочие legal-страницы остаются draft и требуют юридической сверки.
+- Browser QA выполнен через Chromium CDP emulation; финальную проверку на реальном iOS Safari желательно повторить после deploy.
+
+### Следующий рекомендуемый этап
+
+- Phase 2.2 — live deploy `/new/` + реальный e2e тест отправки писем (admin/Cc/auto-reply, спам-проверка), `php -l` / runtime-проверка на сервере, при необходимости донастройка From/SPF/DKIM; юридическая сверка legal-страниц; опционально усиление анти-спама.
 
 ## Phase 2.0 — Real PHP contact form for LINE Business OS
 

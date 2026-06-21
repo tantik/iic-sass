@@ -10,12 +10,14 @@ document.addEventListener('DOMContentLoaded', function () {
     nav.classList.remove('is-open');
     if (backdrop) backdrop.classList.remove('is-visible');
     document.body.classList.remove('menu-open');
+    if (document.activeElement && nav.contains(document.activeElement)) toggle.focus();
   }
 
   if (toggle && nav) {
     backdrop = document.createElement('button');
     backdrop.type = 'button';
     backdrop.className = 'nav-backdrop';
+    backdrop.tabIndex = -1;
     backdrop.setAttribute('aria-label', 'メニューを閉じる');
     document.body.appendChild(backdrop);
 
@@ -26,6 +28,10 @@ document.addEventListener('DOMContentLoaded', function () {
       nav.classList.toggle('is-open', !isOpen);
       backdrop.classList.toggle('is-visible', !isOpen);
       document.body.classList.toggle('menu-open', !isOpen);
+      if (!isOpen) {
+        var firstLink = nav.querySelector('a');
+        if (firstLink) firstLink.focus();
+      }
     });
 
     backdrop.addEventListener('click', closeMenu);
@@ -34,11 +40,27 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') closeMenu();
+      if (event.key === 'Tab' && toggle.getAttribute('aria-expanded') === 'true' && window.innerWidth < 820) {
+        var focusable = [toggle].concat(Array.from(nav.querySelectorAll('a[href]')));
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     });
     window.addEventListener('resize', function () {
       if (window.innerWidth >= 820) closeMenu();
     });
   }
+
+  document.querySelectorAll('.faq').forEach(function (faq) {
+    faq.classList.add('faq-ready');
+  });
 
   document.querySelectorAll('.faq-question').forEach(function (question) {
     question.addEventListener('click', function () {

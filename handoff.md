@@ -15,13 +15,15 @@
 - Старый сайт используется только как external reference: https://izumiit.com/
 - Legal pages являются draft и содержат обязательное предупреждение.
 - Contact form остаётся static/mailto: `izumi@izumiit.com`.
-- Текущий этап: Phase 1.6 visual/copy/trust polish.
+- Текущий этап: Phase 1.7.
 
 ## Файлы, над которыми работали
 
 - `index.html`
-- `products.html`
 - `pricing.html`
+- `security.html`
+- `company.html`
+- `contact.html`
 - `assets/css/style.css`
 - `assets/js/main.js`
 - `handoff.md`
@@ -43,6 +45,11 @@
 - Добавлены секции `LINE Business OSで変わること`, `導入前と導入後の違い`, `こんな店舗に向いています`, `向いていないケース`.
 - Добавлены четыре безопасных HTML/CSS mockups для Workforce/Booking без реальных имён, логотипов клиентов и персональных данных.
 - Custom Automation расширен до формулировки для разных事業, а не только店舗.
+- Hero primary CTA уточнён до `デモ・導入相談をする`.
+- Fit/not-fit copy конкретизирован для LINE運用, small-start и случаев, где нужен専用システム.
+- Mobile drawer получил focus management и keyboard focus loop; невидимый backdrop исключён из tab order.
+- FAQ получил progressive fallback: при отключённом JS ответы остаются видимыми, а при включённом работает accordion.
+- Основная навигация pricing/security/company/contact переведена на японские labels.
 
 ## Что пробовали и не сработало
 
@@ -80,3 +87,4 @@ Professional screenshot requirements:
 - Провести review японского текста.
 - Выполнить юридическую проверку legal pages.
 - Реализовать production contact form.
+- Заменить HTML/CSS mockups на анонимизированные product screenshots после подготовки безопасных demo data.

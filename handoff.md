@@ -7,7 +7,7 @@
 ## Текущее состояние
 
 - Стек: static HTML/CSS/JS, без framework, build system и backend.
-- Текущая ветка: `main`.
+- Текущая ветка: `tools/uiux-pro-max-test` (НЕ `main`). См. раздел Phase 1.9D — branch/deploy status.
 - Remote: `origin https://github.com/tantik/iic-sass.git`.
 - Основные страницы: `index.html`, `products.html`, `pricing.html`, `security.html`, `company.html`, `contact.html`.
 - Legal pages: `privacy.html`, `terms.html`, `commercial-transaction.html`, `security-policy.html`, `data-handling-policy.html`, `support-policy.html`, `billing-policy.html`.
@@ -16,7 +16,52 @@
 - Legal pages являются draft и содержат обязательное предупреждение.
 - Contact form остаётся static/mailto: `izumi@izumiit.com`.
 - Live test path: https://izumiit.com/new/
-- Текущий этап: Phase 1.9C — Products page visual polish + Pricing minor completion cleanup (после Phase 1.9B).
+- Текущий этап: Phase 1.9D — Trust / Security / Company / Contact polish + safe hero refinements.
+
+## Phase 1.9D — Trust pages polish (security / company / contact) + safe hero chips
+
+### Branch / deploy status (preflight)
+
+- **Работа велась на ветке `tools/uiux-pro-max-test`** (по явному выбору пользователя: «сделать 1.9D здесь, закоммитить, затем СПРОСИТЬ перед merge в main / push»).
+- Commit `1327ab1` «Polish Phase 1.9C products page» находится **только** на `tools/uiux-pro-max-test`. Он **НЕ влит в `main`** и **НЕ запушен** в `origin`.
+- `main` и `origin/main` указывают на `2b4ae73` «Polish Phase 1.9B pricing page».
+- Untracked (НЕ коммитить): `.cursor/`, `design-test/`, `design-test-a/`. В commit включены только утверждённые файлы проекта.
+- `cursor.svg` / `assets/images/cursor.svg` — отсутствует. Custom cursor не реализуется. Удалять нечего.
+- Phase 1.9D закоммичен на `tools/uiux-pro-max-test`. Merge в `main` и push НЕ выполнялись — ожидают явного подтверждения пользователя.
+
+### Файлы изменены в Phase 1.9D
+
+- `security.html` — полная переработка в доверительную B2B структуру: hero + safety chips, секция принципов (6 карточек с осторожными формулировками), responsibility split, before-launch checklist, CTA с 利用規約 / プライバシーポリシー.
+- `company.html` — переработка: hero, trust foundation (4 карточки, 500社以上 явно привязано к Web制作・開発領域 + дисклеймер), current focus (Workforce/Booking/Custom + Web制作 как технический базис), approach (4 карточки), CTA.
+- `contact.html` — hero subcopy обновлён; consultation categories 4→6 (добавлены セキュリティ・データ管理, 個別カスタマイズ); email checklist 7→9 (добавлены LINE公式アカウントの有無, 希望する導入時期); честно сказано, что форма в разработке и связь по email.
+- `index.html` — безопасный hero refinement: prose `.trust-line` заменён на компактный ряд trust-chips (только безопасные факты: 2018年設立 / Web制作・開発で500社以上 / 比較ビズ 認定企業 / 導入前に運用確認).
+- `assets/css/style.css` — добавлен блок «Trust pages polish (Phase 1.9D)»: `.hero-trust-chips`, `.trust-hero .lead`, `.sec-grid` / `.sec-card` / `.sec-ico`, `.launch-checklist`, `.company-foundation`, `.approach-card`; обновлён hero-анимационный селектор.
+- `handoff.md`.
+
+### Safe hero refinement (Task 2)
+
+- Текущий hero уже был стабилен и «serious SaaS». Сделан **малый** refinement, без fake-метрик: prose trust-line → compact trust-chips с теми же безопасными фактами (убрана избыточность, добавлен более структурированный trust-ряд). Mint/green/navy сохранены. Pricing values, fake-метрики, fake-логотипы НЕ добавлялись. 資料ダウンロード НЕ добавлялся (нет файла/страницы).
+
+### Mobile QA (CDP Emulation.setDeviceMetricsOverride)
+
+`document.documentElement.scrollWidth === clientWidth` на всех проверенных ширинах. Горизонтального скролла нет.
+
+| width | index | security | company | contact |
+|------|------|------|------|------|
+| 320 | overflow 0 | overflow 0 | overflow 0 | overflow 0 |
+| 768 | — | overflow 0 (sec-grid 3 cols, checklist 3 cols, CTA 3 кнопки в 1 ряд) | — | — |
+| 1440 | overflow 0 (1425=1425, badCount 0) | — | — | — |
+
+- Mobile menu (index, 320px): открывается (`is-open`, `aria-expanded=true`, `body.menu-open`, scroll lock); drawer `position:fixed`, после анимации `left=45, right=320, width=275` — прижат к правому краю в пределах вьюпорта; overflow 0; меню не уезжает вверх при скролле (body locked); закрывается корректно. Поведение меню общее для всех страниц (один header + main.js).
+- CTA-кнопки и footer-ссылки не переполняют (security CTA из 3 кнопок помещается в один ряд на 768; на ≤420 кнопки становятся full-width и стекируются).
+- Промежуточные ширины 375/390/430 находятся между протестированными 320 и 768 и используют те же одно/переходные раскладки → безопасны. Скриншот security@390 подтвердил визуальное качество карточек.
+- Custom cursor отсутствует. Framework/build/dependencies не добавлялись.
+
+### Forbidden claims grep (Task 7)
+
+- Grep по `*.html` для запрещённых утверждений (LINE公式認定, ISO27001, Pマーク, ..., 1200+, 99%, 4.8/5, 削減工数, 導入店舗数, 稼働率, 満足度 и т.д.): совпадения **только в `design-test-a/index.html`** (untracked reference-дизайн, НЕ коммитится). Все production-страницы чисты.
+- `給与計算 / 法定勤怠 / 税務 / 労務管理` встречаются только в exclusion/disclaimer контексте (index FAQ + «向いていないケース», products, pricing notes). Позитивных claim нет.
+- `500社以上` — только в контексте Web制作・開発領域 (index trust chip + company trust card с явным дисклеймером «SaaS導入実績を示すものではありません»).
 
 ## Phase 1.9C — Products page visual polish + Pricing cleanup
 

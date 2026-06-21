@@ -542,6 +542,7 @@ p {
 .hero-grid>div>.hero-copy:not(.lead) { animation: hero-copy-in 650ms 250ms cubic-bezier(.2,.75,.25,1) both; }
 .hero-grid>div>.button-row { animation: hero-copy-in 650ms 310ms cubic-bezier(.2,.75,.25,1) both; }
 .hero-grid>div>.trust-line { animation: hero-copy-in 650ms 370ms cubic-bezier(.2,.75,.25,1) both; }
+.hero-grid>div>.hero-trust-chips { animation: hero-copy-in 650ms 370ms cubic-bezier(.2,.75,.25,1) both; }
 
 .hero-panel {
   animation: hero-panel-in 780ms 100ms cubic-bezier(.2, .75, .25, 1) both;
@@ -2256,5 +2257,124 @@ textarea {
   .detail-extra {
     grid-template-columns: minmax(0, 1.45fr) minmax(0, .9fr);
     align-items: start;
+  }
+}
+
+/* ============================================================
+   Trust pages polish (Phase 1.9D) — home hero / security / company
+   ============================================================ */
+
+/* Homepage hero — compact, safe trust chips */
+.hero-trust-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin: 1.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hero-trust-chips li {
+  position: relative;
+  padding: 7px 14px 7px 31px;
+  border: 1px solid rgba(22, 54, 90, .16);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, .82);
+  color: var(--color-brand-dark);
+  font-size: .8rem;
+  font-weight: 700;
+  line-height: 1.4;
+  box-shadow: 0 2px 8px rgba(11, 18, 32, .04);
+}
+
+.hero-trust-chips li::before {
+  position: absolute;
+  left: 13px;
+  content: "✓";
+  color: var(--color-line-dark);
+  font-weight: 900;
+}
+
+/* Trust-page heroes (security / company): center and constrain lead */
+.trust-hero .lead {
+  max-width: 660px;
+  margin-inline: auto;
+}
+
+/* Security principle cards */
+.sec-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.sec-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.sec-ico {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  margin-bottom: .85rem;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--color-brand-soft);
+  color: var(--color-brand-dark);
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.sec-card h3 {
+  margin: 0 0 .5rem;
+  font-size: clamp(1.1rem, 3vw, 1.25rem);
+}
+
+.sec-card p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: .9rem;
+  line-height: 1.75;
+}
+
+/* Before-launch checklist reuses .feature-list look, but allow 3 columns */
+.launch-checklist {
+  margin-top: 0;
+}
+
+/* Company foundation note panel */
+.company-foundation {
+  margin-top: 18px;
+}
+
+.company-foundation .eyebrow {
+  margin-bottom: .6rem;
+}
+
+.company-foundation p:last-child {
+  margin-bottom: 0;
+  color: var(--color-text);
+}
+
+.approach-card h3 {
+  margin-bottom: .55rem;
+  font-size: clamp(1.1rem, 3vw, 1.25rem);
+}
+
+.approach-card p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: .9rem;
+  line-height: 1.75;
+}
+
+@media (min-width: 760px) {
+  .sec-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .launch-checklist {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

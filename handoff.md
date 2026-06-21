@@ -14,9 +14,78 @@
 - `/old` отсутствует и не требуется.
 - Старый сайт используется только как external reference: https://izumiit.com/
 - Legal pages являются draft и содержат обязательное предупреждение.
-- Contact form: static, через `mailto:` (progressive enhancement, без backend). To: `izumi@izumiit.com`, CC: `konstantin.chvykov@gmail.com`.
-- Live test path: https://izumiit.com/new/
-- Текущий этап: Phase 1.9F — Contact form mailto integration + repo cleanup + final QA.
+- Contact form: **Phase 2.0** — реальная отправка через native PHP (`api/form.php`, PHP `mail()`), без backend-framework/зависимостей/БД. Admin To: `izumi@izumiit.com`, Cc: `konstantin.chvykov@gmail.com`; auto-reply клиенту на его email. (Ранее Phase 1.9F: `mailto:`.)
+- Live test path: https://izumiit.com/new/ (форма `POST` → `/new/api/form.php`).
+- Текущий этап: Phase 2.0 — Real PHP contact form for LINE Business OS.
+
+## Phase 2.0 — Real PHP contact form for LINE Business OS
+
+### Branch / deploy status (preflight, TASK 0)
+
+- Работа на `main`. Перед редактированием: `git status` clean; `main` = `origin/main` = `afdae37` (Phase 1.9F `Add contact mailto form and cleanup test artifacts`). `git fetch origin` — up to date.
+- `.cursor/` ignored и не трекается (подтверждено `git ls-files --error-unmatch .cursor` → not tracked). `design-test/` и `design-test-a/` в `.gitignore` и не трекаются. Временных скриншотов/debug-файлов в трекинге нет.
+- Remote: `origin https://github.com/tantik/iic-sass.git` (HTTPS).
+
+### PHP form implementation summary
+
+- Mailto-only поведение заменено на реальную отправку: форма `#contactInquiryForm` теперь `method="post" action="api/form.php"`; JS делает `fetch` и показывает success **только** после `{ ok: true }` от PHP. Новый дизайн SaaS-страницы сохранён (старый дизайн НЕ возвращался).
+- Старый bundled JS и старый `form.php` НЕ переиспользовались — написан новый безопасный обработчик.
+
+### Endpoint path
+
+- `api/form.php` (относительно `/new/contact.html` резолвится в `/new/api/form.php`).
+- Только `POST`; не-POST → HTTP 405 `{ ok:false, message:"method_not_allowed" }`. Ответ всегда JSON (`Content-Type: application/json; charset=utf-8`).
+
+### Email recipients / cc / auto-reply behavior
+
+- Admin **To**: `izumi@izumiit.com`; **Cc**: `konstantin.chvykov@gmail.com`; **Reply-To**: email отправителя; **Subject**: `【LINE Business OS】導入相談フォーム`.
+- Client **auto-reply**: только на email пользователя (Gmail в копию НЕ ставится); **Reply-To**: `izumi@izumiit.com`; **Subject**: `お問い合わせを承りました｜IZUMI IT COMPANY`.
+- **From**: `IZUMI IT COMPANY <izumi@izumiit.com>` (если хостинг отклонит — поменять `FROM_EMAIL` на разрешённый домен-адрес, Reply-To оставить `izumi@izumiit.com`; в файле есть комментарий).
+- Письма plain-text (UTF-8, 8bit); subject через `mb_encode_mimeheader`. Admin-тело содержит все поля + 送信日時 + IP. Auto-reply провал НЕ блокирует admin-success.
+- `mail()`: admin успех → `{ ok:true }`; admin провал → HTTP 500 `{ ok:false, message:"send_failed" }`.
+
+### Validation summary
+
+- **Client (JS)**: required (name / company / email / business_type / store_count / staff_count / line_official / timeline / message), формат email, ≥1 `service[]`, согласие `privacy_consent`, длина message ≤ 1200. Submit-кнопка disabled на время отправки; персональные данные НЕ логируются; нет localStorage/sessionStorage.
+- **Server (PHP)**: те же required server-side, `filter_var(FILTER_VALIDATE_EMAIL)` (без deprecated `FILTER_SANITIZE_STRING`), `mb_strlen(message) ≤ 1200`, ≥1 service. Невалидно → HTTP 422 `{ ok:false, message:"invalid_input" }`. Header-injection защита: CR/LF/NUL вырезаются из header-значений (`clean_header`).
+
+### Anti-spam summary
+
+- **Honeypot** `website` (скрыт через visually-hidden clip, `tabindex=-1`, `aria-hidden`): если заполнен → `{ ok:true }` без отправки писем.
+- **Time-trap** `started_at` (JS ставит `Date.now()` при загрузке): если прошло < 3000 мс → `{ ok:true }` без отправки. Пустой `started_at` допускается (JS недоступен).
+- Защита базовая, не enterprise (нет CAPTCHA / rate-limit / репутации IP).
+
+### Accessibility
+
+- `#contactFormMessage`: `role="status" aria-live="polite" tabindex="-1"`; после результата получает focus. Success/error — видимый текст + иконка (не только цвет). Success-текст переносится (`white-space: pre-line`). Прямой email fallback виден (lead + заметка под формой).
+
+### CSS polish
+
+- Добавлены: `.form-message.is-success`, `white-space:pre-line` для form-message, `.form-full-label`, `.consent-option`, honeypot `.form-hp` (visually-hidden clip — не создаёт горизонтальный скролл), `:disabled`/`.is-loading` для submit. Принятые страницы НЕ редизайнились.
+
+### Local QA результат
+
+- `*.html`/`*.php` forbidden-claims grep (`LINE公式認定 / ISO27001 / Pマーク / 法定勤怠対応 / 給与計算対応 / 税務対応 / 労務管理対応 / 売上保証 / no-show完全防止 / SaaS導入500社 / LINE Business OS 導入500社 / 1200+ / 99% / 4.8/5 / 削減工数 / 導入店舗数`): **0 совпадений**. `500社以上` — только Web制作・開発領域 (index/company). Стале mailto/«送信完了»/«メールアプリ» копий в форме нет (grep 0).
+- Статическая проверка PHP/JS логики выполнена. **PHP-runtime QA локально НЕ выполнялся: PHP не установлен на dev-машине** (`where.exe php` → not found), поэтому `php -S` / `php -l` недоступны. Полный функциональный тест отправки писем нужно провести на live-сервере (см. ниже).
+
+### Mobile / overflow результат
+
+- Раскладка формы: single-column по умолчанию (320px), full-width инпуты; `.form-grid`/`.checkbox-grid` → 2 колонки от ≥640px; honeypot скрыт clip-методом (исключает горизонтальный скролл). Принятая mobile-инфраструктура Phase 1.9E/1.9F не менялась. Финальный browser/overflow прогон рекомендуется после deploy.
+
+### Live QA результат
+
+- **НЕ выполнен** (требует deploy на `/new/` и реального почтового сервера). После push нужно: отправить тестовую заявку с live `/new/contact.html`; подтвердить получение на `izumi@izumiit.com` и `konstantin.chvykov@gmail.com`; подтвердить auto-reply на тестовый email; проверить папку спам; убедиться, что success показывается только после `{ ok:true }`; проверить отсутствие персональных данных в console.
+
+### Остаточные риски Phase 2.0
+
+- Доставляемость PHP `mail()` зависит от сервера/DNS/SPF/DKIM/DMARC — письма могут уходить в спам или отклоняться (особенно From на внешнем домене). При проблемах сменить `FROM_EMAIL` на адрес, разрешённый хостингом.
+- Анти-спам базовый, не enterprise-grade.
+- Нет БД / истории заявок (по требованию): отправленные данные нигде не сохраняются.
+- `privacy.html` ссылка в consent ведёт на ещё не созданную страницу (как и существующие footer legal-ссылки) — нужно создать legal-страницы.
+
+### Следующий рекомендуемый этап
+
+- Phase 2.1 — live deploy + реальный e2e тест отправки (admin/cc/auto-reply, спам-проверка); при необходимости донастройка From/SPF/DKIM; создание legal-страниц (`privacy.html` и др.); опционально усиление анти-спама.
 
 ## Phase 1.9F — Contact form (mailto) + repo cleanup + final QA
 

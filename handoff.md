@@ -16,16 +16,39 @@
 - Legal pages являются draft и содержат обязательное предупреждение.
 - Contact form остаётся static/mailto: `izumi@izumiit.com`.
 - Live test path: https://izumiit.com/new/
-- Текущий этап: Phase 1.8 QA polish and CRO polish.
+- Текущий этап: Phase 1.9A — Global visual system + Home page visual polish.
 
-## Файлы, над которыми работали
+## Phase 1.9A — Global visual system + Home page visual polish
+
+### Файлы изменены в Phase 1.9A
+
+- `assets/css/style.css`
+- `index.html`
+- `handoff.md`
+
+### Что изменилось в Phase 1.9A
+
+- Введена premium SaaS color system через упорядоченные CSS variables / design tokens: core navy (`#071827`, `#0b1220`), text (`#102033`), surfaces (clean white, `#f7f8fa`, `#f6f4ef`), borders (`#e4e8ef`), restrained copper/gold accent (`#b98245`–`#c6a15b`), LINE green (`#06c755`) только для LINE-related акцентов.
+- Визуальное направление: deep navy + clean white + restrained copper accent + точечный LINE green; без luxury/кожи/монограмм/тяжёлого золота.
+- Обновлены shadow system (navy-tinted: `--shadow-sm/md/lg/brand/accent`), gradients (`--gradient-hero/navy/navy-deep/card-soft`), radius и transition tokens.
+- Legacy имена брендовых токенов (`--color-brand`, `--color-brand-dark`, `--color-brand-deep`, `--color-brand-soft`, `--color-brand-pale`) сохранены, чтобы не ломать остальные страницы.
+- Hero polish: премиальный SaaS-фон (`--gradient-hero`), мягкие navy/copper декоративные слои, copper trust dot, LINE green status chip, усиленная тень панели (`--shadow-lg`), structured «product header» с тонким разделителем в `.hero-panel-head`.
+- CTA hierarchy: primary `.button` — navy gradient (заметный), secondary `.button-secondary` — спокойный белый outline.
+- Hero/product visual (flow-stage): LINE-нода в зелёном (`--color-line`), operation-нода в navy gradient — показывает LINE → 管理画面 → 店舗運営 как систему.
+- Home card/section consistency: единый radius/shadow, copper-акценты в trust numbers/badges, navy gradient в workflow steps / stat-box / pricing-preview / contact-final / cta-section, мягкие borders.
+- Mockup polish: добавлены явно вымышленные demo-метки `Staff A`, `Staff B` и пометки «（デモ）» в management-панелях; без реальных имён, логотипов, телефонов, email и персональных данных.
+- Japanese typography/wrapping polish: `text-wrap: balance/pretty`, `line-break: strict`, `word-break: keep-all` для коротких заголовков карточек/секций с mobile fallback (`max-width: 480px` → normal) во избежание горизонтального overflow; hero headline сохранён в две строки через block spans.
+- Mobile home polish: проверены 375/390/430/768px, hero-title `clamp(28px, 6.6vw, 60px)`, flow-stage в колонку на узких экранах, отсутствие горизонтального скролла (`overflow-x: hidden`).
+- Pricing / legal / business logic / тексты НЕ менялись (кроме demo-меток mockup); `pricing.html` не затронут.
+
+## Файлы, над которыми работали ранее (Phase 1.8)
 
 - `pricing.html`
 - `assets/css/style.css`
 - `handoff.md`
 - (ранее в этой фазе: `index.html`, `products.html`, `contact.html`)
 
-## Что изменилось
+## Что изменилось (Phase 1.8 и ранее)
 
 - Hero получил более конкретный текст о勤務希望・予約連絡・報告 и product-like визуальную схему работы.
 - Добавлен блок `信頼の背景` с осторожно квалифицированными фактами: 2018年設立, 500社以上 только в Web制作・開発領域, ランサーズ 2021年上期 MVL賞, 比較ビズ 認定企業.
@@ -80,6 +103,8 @@
 - Нельзя заявлять `LINE公式認定`, `ISO27001`, `Pマーク`, `法定勤怠対応`, `給与計算対応`.
 - `500社以上` относится только к Web制作・開発領域, не к LINE Business OS.
 - Факты о наградах и認定 следует повторно сверить перед production publication.
+- После push: `/new/` deployment must be verified; visual QA still required на реальном mobile/desktop после deploy.
+- Screenshots need anonymization before public use (mockups сейчас — HTML/CSS с вымышленными demo-данными).
 - TODO: Replace mockups with anonymized real screenshots.
 
 Professional screenshot requirements:
@@ -94,6 +119,7 @@ Professional screenshot requirements:
 
 ## Следующий шаг
 
+- Phase 1.9B — pricing page visual polish, только после утверждения home visual direction.
 - Проверить сайт визуально в браузере.
 - Проверить mobile navigation, backdrop, focus и scroll lock на реальном устройстве.
 - Подключить и проверить deploy.

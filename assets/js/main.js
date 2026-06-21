@@ -74,6 +74,97 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  var contactForm = document.getElementById('contactInquiryForm');
+  if (contactForm) {
+    var formMessage = document.getElementById('contactFormMessage');
+    var MAILTO_SAFE_LENGTH = 1900;
+    var MAIL_TO = 'izumi@izumiit.com';
+    var MAIL_CC = 'konstantin.chvykov@gmail.com';
+    var MAIL_SUBJECT = 'LINE Business OS 導入相談';
+
+    function setFormMessage(text, kind) {
+      if (!formMessage) return;
+      formMessage.textContent = text;
+      formMessage.hidden = false;
+      formMessage.classList.toggle('is-error', kind === 'error');
+      formMessage.classList.toggle('is-info', kind !== 'error');
+    }
+
+    function fieldValue(name) {
+      var el = contactForm.elements[name];
+      if (!el) return '';
+      return (el.value || '').toString().trim();
+    }
+
+    contactForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      var name = fieldValue('name');
+      var company = fieldValue('company');
+      var email = fieldValue('email');
+      var message = fieldValue('message');
+
+      var missing = [];
+      if (!name) missing.push('お名前');
+      if (!company) missing.push('会社名・店舗名');
+      if (!email) missing.push('メールアドレス');
+      if (!message) missing.push('現在の課題・相談内容');
+
+      if (missing.length) {
+        setFormMessage('次の必須項目をご入力ください：' + missing.join('、'), 'error');
+        var firstMissing = contactForm.elements[
+          !name ? 'name' : !company ? 'company' : !email ? 'email' : 'message'
+        ];
+        if (firstMissing && typeof firstMissing.focus === 'function') firstMissing.focus();
+        return;
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setFormMessage('メールアドレスの形式をご確認ください。', 'error');
+        if (contactForm.elements.email) contactForm.elements.email.focus();
+        return;
+      }
+
+      var services = [];
+      var serviceInputs = contactForm.querySelectorAll('input[name="service"]:checked');
+      serviceInputs.forEach(function (input) { services.push(input.value); });
+
+      function orUnselected(value) { return value ? value : '未選択'; }
+
+      var bodyLines = [
+        'LINE Business OS 導入相談',
+        '',
+        'お名前: ' + name,
+        '会社名・店舗名: ' + company,
+        'メールアドレス: ' + email,
+        '電話番号: ' + (fieldValue('phone') || '未記入'),
+        '業種: ' + orUnselected(fieldValue('business_type')),
+        '店舗数: ' + orUnselected(fieldValue('store_count')),
+        'スタッフ数: ' + orUnselected(fieldValue('staff_count')),
+        '興味のあるサービス: ' + (services.length ? services.join('、') : '未選択'),
+        'LINE公式アカウント: ' + orUnselected(fieldValue('line_official')),
+        '希望する導入時期: ' + orUnselected(fieldValue('timeline')),
+        '',
+        '現在の課題・相談内容:',
+        message
+      ];
+
+      var mailto = 'mailto:' + MAIL_TO +
+        '?cc=' + encodeURIComponent(MAIL_CC) +
+        '&subject=' + encodeURIComponent(MAIL_SUBJECT) +
+        '&body=' + encodeURIComponent(bodyLines.join('\n'));
+
+      if (mailto.length > MAILTO_SAFE_LENGTH) {
+        setFormMessage('相談内容が長いため、メールアプリを開けない場合があります。お手数ですが内容を少し短くしてからお試しください。', 'error');
+        if (contactForm.elements.message) contactForm.elements.message.focus();
+        return;
+      }
+
+      setFormMessage('メールアプリを開きます。内容をご確認のうえ送信してください。開かない場合は ' + MAIL_TO + ' まで直接ご連絡ください。', 'info');
+      window.location.href = mailto;
+    });
+  }
+
   document.querySelectorAll('.faq').forEach(function (faq) {
     faq.classList.add('faq-ready');
   });

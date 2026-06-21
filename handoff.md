@@ -7,16 +7,89 @@
 ## Текущее состояние
 
 - Стек: static HTML/CSS/JS, без framework, build system и backend.
-- Текущая ветка: `main`. Phase 1.9D (`486d496 Polish Phase 1.9D trust pages`) **уже влит в `main`** (и `main`, и `tools/uiux-pro-max-test` указывают на `486d496`). `main` синхронизирован с `origin/main`.
+- Текущая ветка: `main`. Phase 1.9E (`18bf0f4 Polish Phase 1.9E company and contact pages`) был закоммичен на `main`, но **не запушен** в `origin` (origin/main оставался на `486d496`). В Phase 1.9F это противоречие разрешено: `18bf0f4` запушен в `origin/main`, затем поверх добавлен commit Phase 1.9F. `main` синхронизирован с `origin/main`.
 - Remote: `origin https://github.com/tantik/iic-sass.git`.
 - Основные страницы: `index.html`, `products.html`, `pricing.html`, `security.html`, `company.html`, `contact.html`.
 - Legal pages: `privacy.html`, `terms.html`, `commercial-transaction.html`, `security-policy.html`, `data-handling-policy.html`, `support-policy.html`, `billing-policy.html`.
 - `/old` отсутствует и не требуется.
 - Старый сайт используется только как external reference: https://izumiit.com/
 - Legal pages являются draft и содержат обязательное предупреждение.
-- Contact form остаётся static/mailto: `izumi@izumiit.com`.
+- Contact form: static, через `mailto:` (progressive enhancement, без backend). To: `izumi@izumiit.com`, CC: `konstantin.chvykov@gmail.com`.
 - Live test path: https://izumiit.com/new/
-- Текущий этап: Phase 1.9E — Company / Contact final polish + global mobile QA.
+- Текущий этап: Phase 1.9F — Contact form mailto integration + repo cleanup + final QA.
+
+## Phase 1.9F — Contact form (mailto) + repo cleanup + final QA
+
+### Branch / deploy status (preflight + разрешение противоречия)
+
+- Preflight выявил противоречие: пользователь считал, что Phase 1.9E «выгружена/задеплоена», но фактически `18bf0f4 Polish Phase 1.9E company and contact pages` существовал только локально на `main`; `origin/main` оставался на `486d496` (`git ls-remote` подтвердил реальное состояние remote — `486d496`).
+- Резолюция (TASK 0): (1) `18bf0f4` НЕ был на `origin/main`; (2) local `main` и `origin/main` НЕ были идентичны (local впереди на 1 коммит); (3) так как Phase 1.9E принята и push/deploy подтверждён, accepted-коммит `18bf0f4` запушен в `origin/main` (`486d496..18bf0f4`).
+- Затем поверх добавлен коммит Phase 1.9F (`Add contact mailto form and cleanup test artifacts`) и запушен в `origin/main`.
+
+### Repo cleanup (TASK 1)
+
+- `.gitignore` уже содержал `.cursor/`, `design-test/`, `design-test-a/` (добавлены в 1.9E). Дополнений не потребовалось.
+- `.cursor/` **сохранён** на диске и **остаётся ignored** (содержит Cursor skills/settings — НЕ disposable, НЕ удалялся, НЕ коммитился).
+- `design-test/` (`uiux-pro-max-test.md`) и `design-test-a/` (`index.html / script.js / styles.css / README.md`) — подтверждены как локальные дизайн-эксперименты, не используются production-страницами (grep `design-test` по `*.html` → 0). **Удалены** с диска.
+- Рабочее дерево перед началом было чистым (`git status` clean, кроме ignored-папок); случайных tooling/QA/debug/screenshot файлов в трекинге нет.
+
+### Файлы изменены в Phase 1.9F
+
+- `contact.html` — добавлена практичная inquiry-форма (`#contactInquiryForm`) перед блоком «相談できること»:
+  - Поля: お名前 (required), 会社名・店舗名 (required), メールアドレス (email, required), 電話番号 (任意), 業種 (select), 店舗数 (select), スタッフ数 (select), LINE公式アカウントの有無 (select), 希望する導入時期 (select), 興味のあるサービス (6 checkboxes, multiple), 現在の課題・相談内容 (textarea required, maxlength 1200).
+  - UX-copy: `入力内容をもとにメールアプリを開きます。内容をご確認のうえ送信してください。`
+  - Каждое поле имеет видимый `<label>`; required/任意 помечены текстовыми бейджами `必須`/`任意` (не только цвет); checkbox-группа в `<fieldset><legend>興味のあるサービス`.
+  - Контейнер ошибок/статуса `#contactFormMessage` (`role="alert" aria-live="assertive"`) с иконкой + текстом (не только цвет).
+  - Fallback: видимый прямой email `izumi@izumiit.com` сохранён (в contact-intro карточке и в заметке под формой).
+  - Hero chip `フォーム準備中` → `メールアプリで送信`; contact-intro заголовок/текст обновлён под рабочую форму.
+  - Удалён дублирующий блок «メールに記載いただきたい内容» (его поля теперь в форме); «相談できること» и «お問い合わせ後の流れ» сохранены.
+- `assets/css/style.css` — добавлены стили формы (переиспользуют существующие `label`/`input`/`select`/`textarea`/`.form-grid`/`.contact-form`): `.contact-form-panel`, `.contact-form-lead`, `.form-label-flag.req/.opt`, `.form-fieldset`/`legend`, `.checkbox-grid` + `.check-option`, `.form-message.is-error/.is-info` (с `::before`-иконкой). В медиа-запросе `min-width:640px` добавлен `.checkbox-grid { 2 cols }` рядом с `.form-grid`.
+- `assets/js/main.js` — добавлен scoped-блок обработчика формы (только при наличии `#contactInquiryForm`); существующие mobile menu / FAQ / reveal НЕ затронуты.
+- `handoff.md`.
+
+### Contact form behavior (TASK 2/3)
+
+- Progressive enhancement: на submit JS делает `preventDefault`, валидирует required (お名前 / 会社名・店舗名 / メールアドレス / 現在の課題・相談内容) + базовый формат email; при ошибке показывает видимый текст в `#contactFormMessage` и ставит фокус на первое незаполненное поле (навигация НЕ происходит).
+- Mailto собирается через `encodeURIComponent` для subject и body; CC также кодируется. Множественный выбор сервисов поддержан (`querySelectorAll('input[name="service"]:checked')`, объединение через `、`).
+- `to=izumi@izumiit.com`, `cc=konstantin.chvykov@gmail.com`, `subject=LINE Business OS 導入相談`, body — форматированный японский текст (お名前 / 会社名・店舗名 / メールアドレス / 電話番号 / 業種 / 店舗数 / スタッフ数 / 興味のあるサービス / LINE公式アカウント / 希望する導入時期 / 現在の課題・相談内容). Незаполненные select → `未選択`, пустой телефон → `未記入`.
+- Если итоговый mailto-URL слишком длинный (> ~1900 симв.), показывается понятное предупреждение с просьбой сократить текст (навигация НЕ происходит).
+- Безопасность: НЕ показывается «送信完了しました»; НЕ имитируется серверная отправка; нет backend/API/serverless/dependencies; данные НЕ пишутся в localStorage/sessionStorage; персональные данные НЕ логируются в console; данные не отправляются third-party.
+- НЕ показывается ложное подтверждение отправки — текст явно говорит, что откроется почтовое приложение и письмо нужно подтвердить/отправить вручную.
+
+### Mailto QA результат
+
+- Сгенерированный mailto проверен (заполненная форма, demo-данные): `len=1466` (< safe limit 1900), `to=izumi@izumiit.com`, `cc=konstantin.chvykov%40gmail.com`, `subject=LINE%20Business%20OS%20導入相談`, body корректно закодирован (`%0A` переносы) и при декодировании точно соответствует требуемому формату.
+- Validation: при пустых required submit заблокирован, `#contactFormMessage` = `次の必須項目をご入力ください：お名前、メールアドレス` (класс `is-error`), фокус ушёл на お名前, URL не изменился.
+
+### Mobile / overflow QA (CDP Emulation.setDeviceMetricsOverride, локальный http.server)
+
+`document.documentElement.scrollWidth === clientWidth`, горизонтального скролла нет (`overflow = 0`):
+
+| width | index | products | pricing | security | company | contact |
+|------|------|------|------|------|------|------|
+| 320 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 768 | — | — | — | — | — | 0 |
+
+- 320px (contact): форма single-column, инпуты/кнопки/textarea не переполняются, метки видимы. 768px: `.form-grid` и `.checkbox-grid` = 2 колонки (`getComputedStyle` подтвердил), overflow 0. Промежуточные 375/390/430 между протестированными 320 и 768 на той же fluid-раскладке → безопасны.
+- Mobile menu (company, 320px): открывается (`aria-expanded`/`is-open`/`body.menu-open`), scroll lock активен, overflow 0, закрывается корректно — поведение не сломано новой формой.
+
+### Forbidden claims grep (TASK 5)
+
+- Grep по `*.html` (`LINE公式認定 / ISO27001 / Pマーク / 法定勤怠対応 / 給与計算対応 / 税務対応 / 労務管理対応 / 売上保証 / no-show完全防止 / SaaS導入500社 / LINE Business OS 導入500社 / 1200+ / 99% / 4.8/5 / 削減工数 / 導入店舗数`): **0 совпадений**.
+- `給与計算 / 法定勤怠 / 税務 / 労務管理` — только exclusion/disclaimer контекст (products L73, pricing L202, index FAQ + «向いていないケース»). В новой форме эти слова НЕ используются (взамен — нейтральные `現在の課題・相談内容`).
+- `500社以上` — только Web制作・開発領域 (index hero chip + index trust card + company trust card с явным дисклеймером).
+- Security НЕ заявляет сертификаций.
+
+### Остаточные риски Phase 1.9F
+
+- Реальная отправка зависит от настроенного почтового клиента на устройстве пользователя (поведение mailto). На устройствах без email-клиента форма не отправит письмо — для этого сохранён видимый прямой email как fallback.
+- Финальную проверку на реальном iOS Safari (mailto + fixed-menu) желательно повторить после deploy.
+- Contact/company/products — draft японский контент, нужна финальная юридическая сверка.
+- Длинные сообщения (близко к 1200 симв. + длинные значения полей) теоретически могут упереться в лимит длины mailto на некоторых клиентах — обрабатывается предупреждением.
+
+### Следующий рекомендуемый этап
+
+- Phase 2.0 — опциональная серверная/serverless contact-форма (если потребуется отказ от mailto), замена HTML/CSS mockups на анонимизированные product screenshots, deploy `/new/` и финальный QA на реальном устройстве, ревью японского текста и юридическая сверка.
 
 ## Phase 1.9E — Company / Contact final polish + global QA
 

@@ -116,13 +116,75 @@
       </div>
     </section>
 
-    <section class="section section-alt product-visuals">
-      <div class="container"><div class="section-heading center"><p class="eyebrow">操作イメージ</p><h2>実際の操作イメージ</h2><p>LINEから入力し、店舗側は管理画面で状況を確認できます。導入前に、LINEでの操作と管理画面での確認イメージをご確認いただけます。</p></div><div class="mockup-grid">
-        <article class="mockup-card"><div class="phone-mockup"><div class="mockup-bar"><i></i><span>勤務メニュー</span></div><div class="chat-bubble">今月の勤務希望を提出</div><div class="mockup-actions"><span>勤務希望</span><span>勤務報告</span></div></div><h3>Workforce スタッフ画面</h3><p>勤務希望・勤務報告をLINEから確認しやすくします。</p></article>
-        <article class="mockup-card"><div class="dashboard-mockup"><div class="mockup-bar"><i></i><span>スタッフ管理（デモ）</span></div><div class="metric-row"><b>希望提出</b><strong>8 / 10</strong></div><div class="dashboard-row"><span></span><em>Staff A・確認済み</em></div><div class="dashboard-row"><span></span><em>Staff B・修正依頼</em></div></div><h3>Workforce 管理者画面</h3><p>シフト・報告・修正依頼を管理画面で確認します。</p></article>
-        <article class="mockup-card"><div class="phone-mockup"><div class="mockup-bar"><i></i><span>予約メニュー</span></div><div class="service-option">サービスを選択</div><div class="service-option">担当者・日時を選択</div><span class="mockup-button">予約内容を確認</span></div><h3>Booking お客様画面</h3><p>メニュー・担当者・日時を選び、LINEから予約できます。</p></article>
-        <article class="mockup-card"><div class="dashboard-mockup"><div class="mockup-bar"><i></i><span>本日の予約（デモ）</span></div><div class="calendar-strip"><span>10:00</span><b>予約</b></div><div class="calendar-strip"><span>13:30</span><b>確認済み</b></div><div class="calendar-strip"><span>16:00</span><b>空き</b></div></div><h3>Booking 店舗側管理</h3><p>予約・キャンセル・リマインドを確認しやすくします。</p></article>
-      </div><p class="mockup-caption">画面は説明用のイメージです。実際の導入内容は店舗ごとに確認します。</p></div>
+    <section class="section section-alt product-system-section">
+      <div class="container">
+        <div class="section-heading center"><p class="eyebrow">操作イメージ</p><h2>実際の操作イメージ</h2><p>LINEから入力し、店舗側は管理画面で状況を確認できます。導入前に、LINEでの操作と管理画面での確認イメージをご確認いただけます。</p></div>
+        <div class="product-system">
+          <div class="ps-flow" aria-label="LINEから店舗運営までの流れ">
+            <span class="ps-flow-step ps-flow-step-line"><i aria-hidden="true">L</i>LINE入力</span>
+            <span class="ps-flow-arrow" aria-hidden="true">→</span>
+            <span class="ps-flow-step"><i aria-hidden="true">▦</i>管理画面で確認</span>
+            <span class="ps-flow-arrow" aria-hidden="true">→</span>
+            <span class="ps-flow-step"><i aria-hidden="true">♪</i>通知・リマインド整理</span>
+            <span class="ps-flow-arrow" aria-hidden="true">→</span>
+            <span class="ps-flow-step ps-flow-step-op"><i aria-hidden="true">✓</i>店舗運営をシンプルに</span>
+          </div>
+          <div class="ps-grid">
+            <div class="ps-col ps-col-line">
+              <p class="ps-col-label"><span class="ps-dot ps-dot-line" aria-hidden="true"></span>LINE側 ・ スタッフ / お客様</p>
+              <article class="ps-phone">
+                <div class="ps-phone-bar"><i aria-hidden="true"></i><span>勤務メニュー</span><em>Workforce・デモ</em></div>
+                <div class="ps-chat">
+                  <div class="ps-bubble ps-bubble-in">今月の勤務希望を提出しました</div>
+                  <div class="ps-bubble ps-bubble-out">受付しました（自動応答）</div>
+                </div>
+                <div class="ps-phone-actions"><span>勤務希望</span><span>勤務報告</span></div>
+                <p class="ps-phone-name">Workforce スタッフ画面</p>
+              </article>
+              <article class="ps-phone">
+                <div class="ps-phone-bar"><i aria-hidden="true"></i><span>予約メニュー</span><em>Booking・デモ</em></div>
+                <div class="ps-option">サービスを選択</div>
+                <div class="ps-option">担当者・日時を選択</div>
+                <span class="ps-cta">予約内容を確認</span>
+                <p class="ps-phone-name">Booking お客様画面</p>
+              </article>
+            </div>
+            <div class="ps-col ps-col-manage">
+              <p class="ps-col-label"><span class="ps-dot ps-dot-manage" aria-hidden="true"></span>管理画面 ・ 店舗側</p>
+              <article class="ps-dash">
+                <div class="ps-dash-bar"><i aria-hidden="true"></i><span>スタッフ管理ダッシュボード</span><em>デモ</em></div>
+                <div class="ps-metrics">
+                  <div class="ps-metric"><small>勤務希望</small><strong>8<i>/10</i></strong></div>
+                  <div class="ps-metric"><small>確認待ち</small><strong>2</strong></div>
+                  <div class="ps-metric"><small>修正依頼</small><strong>1</strong></div>
+                </div>
+                <div class="ps-progress" aria-hidden="true"><span style="width:80%"></span></div>
+                <div class="ps-list">
+                  <div class="ps-list-row"><span class="ps-avatar" aria-hidden="true">A</span><b>Staff A</b><span class="ps-chip ps-chip-ok">確認済み</span></div>
+                  <div class="ps-list-row"><span class="ps-avatar" aria-hidden="true">B</span><b>Staff B</b><span class="ps-chip ps-chip-warn">修正依頼</span></div>
+                </div>
+                <p class="ps-dash-name">Workforce 管理者画面</p>
+              </article>
+              <div class="ps-dash-row">
+                <article class="ps-dash ps-dash-sm">
+                  <div class="ps-dash-bar"><i aria-hidden="true"></i><span>本日の予約</span><em>デモ</em></div>
+                  <div class="ps-booking"><span class="ps-time">10:00</span><b>Demo User</b><span class="ps-chip ps-chip-ok">予約</span></div>
+                  <div class="ps-booking"><span class="ps-time">13:30</span><b>Demo Salon</b><span class="ps-chip ps-chip-info">確認済み</span></div>
+                  <div class="ps-booking"><span class="ps-time">16:00</span><b>空き枠</b><span class="ps-chip">空き</span></div>
+                  <p class="ps-dash-name">Booking 店舗側管理</p>
+                </article>
+                <article class="ps-notify">
+                  <div class="ps-dash-bar"><i aria-hidden="true"></i><span>通知・リマインド</span></div>
+                  <div class="ps-notify-card"><span class="ps-notify-ico" aria-hidden="true">♪</span><div><b>リマインド送信</b><small>来店前日に自動送信（デモ）</small></div></div>
+                  <div class="ps-notify-card"><span class="ps-notify-ico" aria-hidden="true">✓</span><div><b>予約確認</b><small>お客様へLINE通知（デモ）</small></div></div>
+                  <div class="ps-notify-card"><span class="ps-notify-ico" aria-hidden="true">!</span><div><b>修正依頼</b><small>Staff B の勤務時間（デモ）</small></div></div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="mockup-caption">画面は説明用のイメージです。実際の導入内容は店舗ごとに確認します。</p>
+      </div>
     </section>
 
     <section class="section section-alt"><div class="container split"><div><p class="eyebrow">LINEを使う理由</p><h2>スタッフもお客様も、普段使っているLINEから。</h2><p class="lead">新しいアプリのインストールや複雑な操作を増やすと、現場に定着しにくくなります。LINE Business OSは、スタッフやお客様が使い慣れているLINEを入口にすることで、小規模店舗でも導入しやすい業務フローを目指しています。</p></div><div class="stat-box"><h3>入口は、いつものLINE。</h3><p>LINE 業務システムとして、店舗側の管理と現場の操作をつなぎます。小規模店舗 DXを、無理なく始められる形へ。</p></div></div></section>

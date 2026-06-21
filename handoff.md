@@ -16,7 +16,32 @@
 - Legal pages являются draft и содержат обязательное предупреждение.
 - Contact form остаётся static/mailto: `izumi@izumiit.com`.
 - Live test path: https://izumiit.com/new/
-- Текущий этап: Phase 1.9A-Fix — Home visual stabilization (после Phase 1.9A).
+- Текущий этап: Phase 1.9A-2 — Product mockup / 操作イメージ polish (после Phase 1.9A-Fix).
+
+## Phase 1.9A-2 — Product mockup / 操作イメージ polish
+
+### Файлы изменены в Phase 1.9A-2
+
+- `index.html`
+- `assets/css/style.css`
+- `handoff.md`
+- `assets/js/main.js` НЕ менялся (reveal/JS изменений не требовалось).
+
+### Что изменилось в Phase 1.9A-2
+
+- Approved color direction остаётся **mint/green/navy** (LINE green = LINE-first/SMB, navy = trust/management, copper только точечно). Тёмная/luxury тема НЕ возвращалась.
+- Блок 操作イメージ переработан из четырёх одинаковых wireframe-карточек (`.mockup-grid` / `.mockup-card`) в единый **product-system preview** (`.product-system`): теперь читается как одна операционная система, а не галерея плейсхолдеров.
+- Добавлен flow-header внутри блока: **LINE入力 → 管理画面で確認 → 通知・リマインド整理 → 店舗運営をシンプルに** (LINE-нода зелёная, operation-нода navy).
+- Двухколоночная композиция: слева **LINE側** (phone-моки: Workforce スタッフ画面 + Booking お客様画面 с chat bubbles, кнопками, выбором услуги), справа более крупный **管理画面 / 店舗側** (Workforce 管理者画面 dashboard с counters/progress bar/status chips + Booking 店舗側管理 booking-rows + блок 通知・リマインд notification cards).
+- Четыре use case сохранены, но интегрированы как mini-панели внутри одного product-system: Workforce スタッフ画面 / Workforce 管理者画面 / Booking お客様画面 / Booking 店舗側管理.
+- Реализм добавлен только через HTML/CSS: app header bars, LINE chat bubbles, dashboard cards, status chips (確認済み/修正依頼/予約/確認済み/空き), progress bar, reminder/通知 cards, booking time rows, shift/request counters, demo-метки.
+- Данные только вымышленные/demo: `Staff A`, `Staff B`, `Demo User`, `Demo Salon`, `DEMO`, `（デモ）`. Без логотипа Mame To Cha, реальных имён, фото, телефонов, email, скриншотов, stock/AI images.
+- Section title сохранён (`実際の操作イメージ`), пояснительный текст и safe note (`画面は説明用のイメージです。実際の導入内容は店舗ごとに確認します。`) сохранены. Запрещённые фразы (現在開発中 / HTML/CSSモックアップ / 未完成 / テスト中) НЕ добавлялись.
+- Визуальный стиль: white cards, soft mint/blue фоны, navy management accent, restrained copper только в `修正依頼` chip; блок не тёмный, без перегруза зелёным/золотом.
+- Mobile stacking: `.ps-grid` и `.ps-dash-row` стекаются в одну колонку <820px; на desktop management-колонка шире (`.82fr / 1.18fr`). Проверено отсутствие горизонтального скролла (375/390/430/768/desktop).
+- Hover/reveal regression: hover у `.ps-phone/.ps-dash/.ps-notify` спокойный (`translateY(-2px)` + box-shadow, без смены фона → без мерцания); кнопки не трогались; reveal через `.section` сохранён (`.mockup-card` в reveal-списке main.js теперь не находит элементов — безвредно); `prefers-reduced-motion` соблюдён.
+- Custom cursor НЕ реализован; `assets/images/cursor.svg` остаётся untracked и НЕ коммитится.
+- Pricing / business logic / legal / public тексты НЕ менялись. Проверка запрещённых формулировок выполнена: `500社以上` встречается только в Web制作・開発領域 контексте; LINE公式認定 / ISO27001 / Pマーク / セキュリティ完全保証 / 100%安全 / 法定勤怠対応 / 給与計算対応 / 税務対応 / 労務管理対応 / 売上保証 / no-show完全防止 / SaaS導入500社 / 導入500社 / 500社が利用中 — не найдены в публичных страницах.
 
 ## Phase 1.9A-Fix — Home visual stabilization
 
@@ -139,7 +164,7 @@ Professional screenshot requirements:
 
 ## Следующий шаг
 
-- Phase 1.9B — Pricing page visual polish, только после approve home hover/stability (Phase 1.9A-Fix).
+- Phase 1.9B — Pricing page visual polish, только после approve product mockup direction (Phase 1.9A-2).
 - Проверить сайт визуально в браузере.
 - Проверить mobile navigation, backdrop, focus и scroll lock на реальном устройстве.
 - Подключить и проверить deploy.

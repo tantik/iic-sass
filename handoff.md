@@ -10,13 +10,74 @@
 - Текущая ветка: `main`. Phase 1.9E (`18bf0f4 Polish Phase 1.9E company and contact pages`) был закоммичен на `main`, но **не запушен** в `origin` (origin/main оставался на `486d496`). В Phase 1.9F это противоречие разрешено: `18bf0f4` запушен в `origin/main`, затем поверх добавлен commit Phase 1.9F. `main` синхронизирован с `origin/main`.
 - Remote: `origin https://github.com/tantik/iic-sass.git`.
 - Основные страницы: `index.html`, `products.html`, `pricing.html`, `security.html`, `company.html`, `contact.html`.
-- Legal pages: `privacy.html`, `terms.html`, `commercial-transaction.html`, `security-policy.html`, `data-handling-policy.html`, `support-policy.html`, `billing-policy.html`.
+- Legal pages (Phase 2.2, консолидированы): `privacy.html`, `terms.html`, `commercial-disclosure.html`, `disclaimer.html`. Старые draft-страницы `commercial-transaction.html` / `security-policy.html` / `data-handling-policy.html` / `support-policy.html` / `billing-policy.html` **удалены** (контент покрыт новыми comprehensive legal-страницами; footer-legal больше на них не ссылается). Восстановимы через git history при необходимости.
 - `/old` отсутствует и не требуется.
 - Старый сайт используется только как external reference: https://izumiit.com/
 - Legal pages являются draft и содержат обязательное предупреждение.
 - Contact form: **Phase 2.0** — реальная отправка через native PHP (`api/form.php`, PHP `mail()`), без backend-framework/зависимостей/БД. Admin To: `izumi@izumiit.com`, Cc: `konstantin.chvykov@gmail.com`; auto-reply клиенту на его email. (Ранее Phase 1.9F: `mailto:`.)
 - Live test path: https://izumiit.com/new/ (форма `POST` → `/new/api/form.php`).
-- Текущий этап: Phase 2.1 — Home導入flow block + privacy page + final live QA prep.
+- Текущий этап: Phase 2.2 — Legal pages for LINE Business OS (privacy / terms / commercial-disclosure / disclaimer) + footer консолидация.
+
+## Phase 2.2 — Legal pages for LINE Business OS
+
+### Branch / deploy status (preflight, TASK 0)
+
+- Работа на `main`. Перед редактированием `git status` clean. `main` = `origin/main` = `bbd9e4f Fix contact form CTA and deployment readiness` (`git fetch origin`; `git log -1 main` и `git log -1 origin/main` → оба `bbd9e4f`). Phase 2.1 / contact hotfix уже закоммичены и запушены — незавершённого form-fix нет, можно безопасно делать legal-страницы.
+- `.cursor/` ignored и не трекается; `design-test/` / `design-test-a/` в `.gitignore`; временных скриншотов/debug-файлов в трекинге нет (`git ls-files` — только production-файлы).
+- Remote: `origin https://github.com/tantik/iic-sass.git` (HTTPS).
+
+### Важное решение по структуре
+
+- В репозитории **нет** каталога `/new/` — production-сайт лежит в **корне** репозитория (`index.html`, `products.html`, … в корне; `git ls-files` подтвердил). Поэтому legal-страницы созданы/обновлены **в корне**, а не в `/new/`. (Live-деплой ранее упоминался как `/new/`, но это деплой-префикс хостинга, а не каталог в репо.)
+
+### Legal pages созданы / обновлены (TASK 1–5)
+
+- `privacy.html` — **перезаписан** из минимального draft в полноценную プライバシーポリシー (11 разделов) с полным site header/footer/nav. Текст из ТЗ дословно (取得する情報 / 利用目的 / 第三者提供 / 業務委託 / 外部サービス連携 / 安全管理措置 / Cookie / 開示・訂正 / 保存期間 / お問い合わせ窓口 / 改定). Title: `プライバシーポリシー｜LINE Business OS｜IZUMI IT COMPANY`. Hero subcopy из ТЗ.
+- `terms.html` — **перезаписан** из минимального draft в полноценное 利用規約 (20 разделов) с site chrome. Раздел 3 «本サービスが対象としない業務» (給与計算/法定勤怠/税務/労務管理 как исключение), раздел 13 保証の否認, 15 損害賠償の制限 (cap = последний 1 мес). Title: `利用規約｜LINE Business OS｜IZUMI IT COMPANY`.
+- `commercial-disclosure.html` — **новая** страница 特定商取引法に基づく表記 (формат `<dl class="legal-dl">` — на mobile стекается, на ≥640px 2 колонки). 運営責任者: Roman Siedovolosyi. 所在地 / 電話番号: `請求があった場合、遅滞なく開示いたします。` (реальные адрес/телефон на сайте не публиковались — старый `commercial-transaction.html` тоже имел только email; данные регистрации НЕ выдуманы). Title: `特定商取引法に基づく表記｜IZUMI IT COMPANY`.
+- `disclaimer.html` — **новая** страница 免責事項 (8 разделов) с site chrome. Раздел 2 成果の非保証 (売上向上/予約キャンセル防止/来店忘れ防止 НЕ гарантируются). Title: `免責事項｜LINE Business OS｜IZUMI IT COMPANY`.
+- Все 4 страницы содержат `legal-notice`: «本ページはドラフトです。正式な内容は専門家による法務確認後に更新します。本ページは法的助言を構成するものではありません。»
+- CSS: добавлен блок «Legal pages» в конец `style.css` (`.legal-hero`, `.legal-section`, `.legal-doc` + h2/h3/ul/a, `.legal-intro`, `.legal-dl` (responsive dt/dd grid), `.legal-meta`). Mint/green/navy + soft cards + readable, mobile-first. Custom cursor / framework / build / dependencies НЕ добавлялись.
+
+### Footer links updated (TASK 7)
+
+- `footer-legal` приведён к единым 6 ссылкам на **всех** страницах (`index / products / pricing / security / company / contact` + 4 новые legal): プライバシーポリシー→privacy.html, 利用規約→terms.html, 特定商取引法に基づく表記→commercial-disclosure.html, 免責事項→disclaimer.html, セキュリティ→security.html, お問い合わせ→contact.html.
+- Старые 7-ссылочные footer-legal (со ссылками на удалённые policy-страницы) заменены везде. Битых ссылок на удалённые файлы не осталось (grep `commercial-transaction|security-policy|data-handling-policy|support-policy|billing-policy` по `*.html`/`*.php` → 0). Footer переносится на mobile (`flex-wrap`), горизонтального скролла нет.
+
+### Privacy / contact consent link result (TASK 6)
+
+- `contact.html` consent-чекбокс уже имел правильный текст и ссылку: `<a href="privacy.html">プライバシーポリシー</a>に同意して送信します。` — изменений не потребовалось. В браузере подтверждено: checkbox `required`, ссылка ведёт на `privacy.html` (относительный путь, резолвится из той же папки). Footer contact.html обновлён до 6 ссылок.
+
+### Forbidden claims grep result (TASK 9)
+
+- Grep по `*.html`/`*.php` (`LINE公式認定 / ISO27001 / Pマーク / 法定勤怠対応 / 給与計算対応 / 税務対応 / 労務管理対応 / 売上保証 / no-show完全防止 / SaaS導入500社 / LINE Business OS 導入500社 / 1200+ / 99% / 4.8/5 / 削減工数 / 導入店舗数`): **0 совпадений**.
+- `給与計算 / 法定勤怠 / 税務 / 労務管理` — **только** exclusion/disclaimer контекст: terms §3, disclaimer §1, commercial-disclosure 注意事項, products L73, pricing L202, index (向いていないケース / Workforce notice / FAQ). Позитивных claim нет.
+- `500社以上` — только Web制作・開発領域 (index hero chip + index trust card + company trust card с дисклеймером). SaaS導入 контекста нет.
+
+### Mobile / overflow QA result (TASK 9, CDP Emulation + локальный py http.server :8787)
+
+`document.documentElement.scrollWidth > innerWidth` → `false` (горизонтального скролла нет):
+
+| width | privacy | terms | commercial-disclosure | disclaimer | contact | index |
+|------|------|------|------|------|------|------|
+| 320 | ok (320=320) | ok (320=320) | ok (320=320) | ok (320=320) | ok (320=320) | — |
+| 768 | — | — | ok (753<768) | — | — | — |
+| 1440 | — | — | — | — | — | ok (1425<1440) |
+
+- Все 4 новые страницы рендерятся корректно (snapshot подтвердил все разделы, mailto-ссылки, footer-legal из 6 ссылок). Mobile-меню работает (`menu-toggle`, collapsed/expanded, `main.js` подключён). FAQ-аккордеон на index не затронут. CTA/footer/legal-текст не переполняются. Pricing values не менялись. Custom cursor нет.
+- PHP CLI на dev-машине отсутствует (`php` not found) — статику сервировали через Python `http.server` (`file://` заблокирован браузером MCP). Скриншоты заблокированы auto-review; overflow подтверждён программно (точнее визуального).
+
+### Остаточные риски Phase 2.2
+
+- **Legal-страницы — draft и требуют профессиональной юридической сверки до полноценного коммерческого запуска.** Содержат обязательный дисклеймер.
+- **特商法 (commercial-disclosure)**: формулировка 所在地/電話番号 «請求があった場合、遅滞なく開示いたします。» должна быть проверена на соответствие реальной модели продаж (для B2C/部分的 disclosure может потребоваться полное раскрытие адреса/телефона).
+- **PHP mail delivery** всё ещё требует live e2e теста (admin/Cc/auto-reply, спам, `{ ok:true }`), если он ещё не выполнен после деплоя; PHP локально недоступен.
+- Удаление старых policy-страниц — продуктовое решение (консолидация). Если какие-то из них (например `support-policy` / `billing-policy`) нужны как отдельные страницы — восстановить из git и вернуть в footer.
+- Browser QA выполнен через Chromium CDP emulation; финальную проверку на реальном iOS Safari желательно повторить после деплоя.
+
+### Следующий рекомендуемый этап
+
+- Phase 2.3 — юридическая сверка всех legal-страниц специалистом + уточнение 特商法 раскрытия под реальную модель продаж; live e2e тест PHP-формы (если ещё не сделан) с проверкой доставляемости (SPF/DKIM/DMARC); финальный mobile QA на реальном iOS-устройстве после деплоя.
 
 ## Phase 2.1 — Homepage onboarding flow + privacy page
 

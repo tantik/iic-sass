@@ -1,8 +1,9 @@
 <?php
 // LINE Business OS — contact form handler (native PHP, no dependencies).
-// Receives a POST from /contact.html, validates server-side,
-// emails the admin (+Cc) and sends the client an auto-reply.
-// Returns JSON only.
+// Receives a POST from /contact.html, validates server-side, then sends two
+// separate admin emails (primary izumi@ + dedicated Gmail backup copy) and a
+// client auto-reply. Success ({ok:true}) requires BOTH admin emails to be
+// accepted by mail(); the auto-reply is best-effort. Returns JSON only.
 
 declare(strict_types=1);
 
@@ -12,17 +13,20 @@ header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 
 // ---- Configuration ---------------------------------------------------------
-const ADMIN_TO        = 'izumi@izumiit.com';
-const ADMIN_CC        = 'konstantin.chvykov@gmail.com';
+// Two separate admin messages are sent (not a single Cc), because relying on
+// Cc has proven unreliable for delivery to the Gmail backup mailbox.
+const ADMIN_TO            = 'izumi@izumiit.com';
+const ADMIN_BACKUP_TO     = 'konstantin.chvykov@gmail.com';
 // From address. If the host rejects izumi@izumiit.com, change this to an
 // address the server is allowed to send from; keep REPLY_TO as izumi@izumiit.com.
-const FROM_NAME       = 'IZUMI IT COMPANY';
-const FROM_EMAIL      = 'izumi@izumiit.com';
-const REPLY_TO_CLIENT = 'izumi@izumiit.com';
-const ADMIN_SUBJECT   = '【LINE Business OS】導入相談フォーム';
-const CLIENT_SUBJECT  = 'お問い合わせを承りました｜IZUMI IT COMPANY';
-const MESSAGE_MAX     = 1200;
-const MIN_FILL_MS     = 3000;
+const FROM_NAME           = 'IZUMI IT COMPANY';
+const FROM_EMAIL          = 'izumi@izumiit.com';
+const REPLY_TO_CLIENT     = 'izumi@izumiit.com';
+const ADMIN_SUBJECT       = '【LINE Business OS】導入相談フォーム';
+const ADMIN_BACKUP_SUBJECT= '【LINE Business OS】導入相談フォーム（コピー）';
+const CLIENT_SUBJECT      = 'お問い合わせを承りました｜IZUMI IT COMPANY';
+const MESSAGE_MAX         = 1200;
+const MIN_FILL_MS         = 3000;
 // ---------------------------------------------------------------------------
 
 /** Send a JSON response and stop. */
@@ -174,28 +178,38 @@ $clientLines = [
 $clientBody = implode("\r\n", $clientLines);
 
 // Encode subjects for non-ASCII safety.
-$adminSubject  = mb_encode_mimeheader(ADMIN_SUBJECT, 'UTF-8');
-$clientSubject = mb_encode_mimeheader(CLIENT_SUBJECT, 'UTF-8');
-$fromHeader    = mb_encode_mimeheader(FROM_NAME, 'UTF-8') . ' <' . FROM_EMAIL . '>';
-$replyToAdmin  = clean_header($email);
+$adminSubject       = mb_encode_mimeheader(ADMIN_SUBJECT, 'UTF-8');
+$adminBackupSubject = mb_encode_mimeheader(ADMIN_BACKUP_SUBJECT, 'UTF-8');
+$clientSubject      = mb_encode_mimeheader(CLIENT_SUBJECT, 'UTF-8');
+$fromHeader         = mb_encode_mimeheader(FROM_NAME, 'UTF-8') . ' <' . FROM_EMAIL . '>';
+$replyToAdmin       = clean_header($email);
 
-// Admin email headers.
+// Shared admin headers. Reply-To is the submitted customer email so that a
+// reply from either admin mailbox goes back to the customer. No Cc is used;
+// the Gmail backup mailbox receives its own dedicated message below.
 $adminHeaders = [
     'From: ' . $fromHeader,
-    'Cc: ' . ADMIN_CC,
     'Reply-To: ' . $replyToAdmin,
     'MIME-Version: 1.0',
     'Content-Type: text/plain; charset=UTF-8',
     'Content-Transfer-Encoding: 8bit',
 ];
+$adminHeaderString = implode("\r\n", $adminHeaders);
 
-$adminSent = @mail(ADMIN_TO, $adminSubject, $adminBody, implode("\r\n", $adminHeaders));
+// 1) Primary admin mailbox.
+$primarySent = @mail(ADMIN_TO, $adminSubject, $adminBody, $adminHeaderString);
 
-if (!$adminSent) {
+// 2) Dedicated backup/admin copy (separate message, not a Cc).
+$backupSent = @mail(ADMIN_BACKUP_TO, $adminBackupSubject, $adminBody, $adminHeaderString);
+
+// Only report success if BOTH admin messages were accepted by mail().
+if (!$primarySent || !$backupSent) {
     respond(500, ['ok' => false, 'message' => 'send_failed']);
 }
 
-// Client auto-reply (failure must not block admin success).
+// 3) Client auto-reply. Failure here must not block admin success.
+// Note: if this returns false the customer simply does not get a confirmation
+// copy; we intentionally avoid logging the failure with any PII to disk.
 $clientHeaders = [
     'From: ' . $fromHeader,
     'Reply-To: ' . REPLY_TO_CLIENT,

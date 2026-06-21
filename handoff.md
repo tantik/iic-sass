@@ -13,10 +13,83 @@
 - Legal pages (Phase 2.2, консолидированы): `privacy.html`, `terms.html`, `commercial-disclosure.html`, `disclaimer.html`. Старые draft-страницы `commercial-transaction.html` / `security-policy.html` / `data-handling-policy.html` / `support-policy.html` / `billing-policy.html` **удалены** (контент покрыт новыми comprehensive legal-страницами; footer-legal больше на них не ссылается). Восстановимы через git history при необходимости.
 - `/old` отсутствует и не требуется.
 - Старый сайт используется только как external reference: https://izumiit.com/
-- Legal pages являются draft и содержат обязательное предупреждение.
-- Contact form: **Phase 2.0** — реальная отправка через native PHP (`api/form.php`, PHP `mail()`), без backend-framework/зависимостей/БД. Admin To: `izumi@izumiit.com`, Cc: `konstantin.chvykov@gmail.com`; auto-reply клиенту на его email. (Ранее Phase 1.9F: `mailto:`.)
-- Live test path: https://izumiit.com/new/ (форма `POST` → `/new/api/form.php`).
-- Текущий этап: Phase 2.2 — Legal pages for LINE Business OS (privacy / terms / commercial-disclosure / disclaimer) + footer консолидация.
+- Legal pages — публичный launch (Phase 2.3): публичное draft-предупреждение удалено; внутренний legal-risk note хранится только здесь в handoff.
+- Contact form: **Phase 2.3** — native PHP (`api/form.php`, PHP `mail()`), без backend-framework/зависимостей/БД. Отправляются **два отдельных admin-письма** (primary `izumi@izumiit.com` + dedicated Gmail-копия `konstantin.chvykov@gmail.com`), `{ok:true}` только если оба `mail()` вернули success; auto-reply клиенту best-effort. Cc больше НЕ используется.
+- Live root: https://izumiit.com/ (форма `POST` → `api/form.php`). Старый сайт только на `/old21062026/`.
+- Текущий этап: Phase 2.3 — Public launch legal text + contact email reliability + favicon/OGP deploy readiness.
+
+## Phase 2.3 — Public launch final hotfix (legal text / email / OGP)
+
+### Внутренний legal-risk note (НЕ публиковать на сайте)
+
+- **Legal pages are public launch drafts and should be reviewed by a qualified Japanese legal professional before full commercial scale.**
+
+### TASK 0 — Git preflight
+
+- На `main`; `git status` clean перед редактированием; `main` == `origin/main` == `c5c2311 Finalize root launch QA metadata and favicon` (`git fetch origin`; оба rev-parse → `c5c2311`). Скриншотов/temp/debug-файлов в трекинге нет.
+
+### TASK 1 — Публичный draft-warning удалён
+
+- Из `privacy.html`, `terms.html`, `commercial-disclosure.html`, `disclaimer.html` удалён публичный блок `<p class="legal-notice">本ページはドラフトです。…法的助言を構成するものではありません。</p>`.
+- Слово **「ドラフト」** больше не встречается ни в одной публичной странице (`grep ドラフト` по `*.html/*.php/*.xml/*.txt` → 0).
+- `（ドラフト）` убрано из `<meta name="description">` всех 4 страниц.
+- Вместо большого warning-box рядом с `最終更新日` (`.legal-meta`) добавлена мягкая нота: «本ページの内容は、必要に応じて見直し・更新される場合があります。»
+- `security.html` warning не имел; его `mockup-caption` (не-draft дисклеймер) сохранён.
+
+### TASK 2 — Contact email reliability (`api/form.php`)
+
+- Убран `Cc:` на Gmail. Теперь шлются **2 отдельных admin-письма**:
+  1. To `izumi@izumiit.com`, Subject `【LINE Business OS】導入相談フォーム`.
+  2. To `konstantin.chvykov@gmail.com`, Subject `【LINE Business OS】導入相談フォーム（コピー）`.
+- `{ok:true}` возвращается только если **оба** `mail()` вернули `true` (иначе HTTP 500 `send_failed`).
+- Client auto-reply (Subject `お問い合わせを承りました｜IZUMI IT COMPANY`) — best-effort, его провал не блокирует success (PII в файлы не пишется; отмечено комментарием в коде).
+- `Reply-To` обоих admin-писем = email клиента; `From: IZUMI IT COMPANY <izumi@izumiit.com>`; header-sanitization (`clean_header`) сохранён; внутренние ошибки пользователю не показываются.
+- **Важно:** если после этого Gmail всё ещё не получает письма — проблема доставляемости PHP `mail()` (SPF/DKIM/DMARC/репутация). Потребуется SMTP/API-отправитель (напр. SendGrid/Mailgun/SES) — НЕ добавлялось в этой фазе по требованию.
+
+### TASK 3 — favicon / OGP / robots / sitemap
+
+- В репозитории присутствуют и закоммичены (`git ls-files`): `favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `robots.txt`, `sitemap.xml`, `assets/images/og-image.png`.
+- OG-image: реальный логотип IZUMI (ласточка) + текст `IZUMI IT COMPANY` / `LINE Business OS` / `LINE連携で店舗運営をわかりやすく`; без fake-метрик/сертификаций/AI-людей; широкий 1.91:1 баннер (1200×630).
+- Все 10 публичных страниц содержат favicon links, apple-touch-icon, og:image, canonical, страничные title/description/og:title/og:description/og:url и twitter card (проверено grep; `contact.html` минифицирован, но содержит весь набор).
+
+### TASK 4 — Live upload checklist (nginx / manual upload, git push недостаточно)
+
+Загрузить в root после push:
+
+- HTML: `index.html`, `products.html`, `pricing.html`, `security.html`, `company.html`, `contact.html`, `privacy.html`, `terms.html`, `commercial-disclosure.html`, `disclaimer.html`.
+- PHP: `api/form.php`.
+- Assets: `assets/css/style.css`, `assets/js/main.js`, `assets/images/og-image.png`, `favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `robots.txt`, `sitemap.xml`.
+
+### TASK 4/6 — Live статус (на момент работы, ДО загрузки этого хотфикса)
+
+| URL | статус |
+|-----|--------|
+| `/favicon.ico` | 200 ✓ |
+| `/favicon.svg` | 200 ✓ |
+| `/apple-touch-icon.png` | 200 ✓ |
+| `/assets/images/og-image.png` | 200 ✓ |
+| `/robots.txt` | **404 — нужно залить** |
+| `/sitemap.xml` | **404 — нужно залить** |
+| `/api/form.php` (GET) | 405 JSON `{ok:false,method_not_allowed}` ✓ |
+| `/old21062026/index.html` | 200 ✓ (бэкап на месте) |
+| `/privacy.html` | живой всё ещё **показывает「ドラфト」** → требуется загрузка обновлённых HTML |
+
+- Root отдаёт новый LINE Business OS сайт; старый только на `/old21062026/`.
+- Forbidden grep (`LINE公式認定 / ISO27001 / Pマーク / 法定勤怠対応 / 給与計算対応 / 税務対応 / 労務管理対応 / 売上保証 / no-show完全防止 / SaaS導入500社 / 導入500社 / 1200+ / 99% / 4.8/5 / 削減工数 / 導入店舗数`) по `*.html/*.php/*.xml/*.txt` → 0. `給与計算 / 法定勤怠 / 税務 / 労務管理` — только exclusion/disclaimer контекст. `/new/` ссылок нет.
+
+### TASK 5 — Live form test
+
+- **НЕ выполнен агентом** (нет доступа к серверу для загрузки и нельзя слать реальные письма). Выполнить вручную после загрузки `api/form.php`:
+  1. POST с реального тестового email → ожидать HTTP 200 + `{ok:true}`.
+  2. Проверить приход на `izumi@izumiit.com`, отдельной копии на `konstantin.chvykov@gmail.com`, auto-reply на тестовый email, включая папки спама.
+  3. Если `{ok:true}`, но Gmail не получает — зафиксировать: izumi получил? / Gmail получил? / auto-reply получил? — и переходить на SMTP/API-отправитель.
+
+### Остаточные риски Phase 2.3
+
+- **Доставляемость PHP `mail()` в Gmail** не гарантирована даже с отдельным письмом — вероятная причина прошлой пропажи: SPF/DKIM/DMARC/репутация отправителя. Рекомендация: перейти на SMTP/API-отправитель (отдельная фаза).
+- **Legal pages остаются launch-draft** (внутренне) и требуют сверки японским юристом до полного коммерческого масштаба; публичный warning при этом снят по требованию.
+- `robots.txt` / `sitemap.xml` на live дают 404 — обязательно залить.
+- Финальный live-QA (200 на favicon/OGP/robots/sitemap, отсутствие「ドラフト」, console errors, overflow на 320–1920, mobile-меню) нужно повторить **после** ручной загрузки.
 
 ## Phase 2.2 — Legal pages for LINE Business OS
 

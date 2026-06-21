@@ -2,147 +2,65 @@
 
 ## Цель
 
-Создать SaaS-first сайт IZUMI IT COMPANY для японского рынка, где LINE Business OS — основной продуктовый umbrella brand, а Workforce и Booking — отдельные SaaS-продукты.
-
-## План реализации Phase 1.5
-
-1. Обновить позиционирование и SEO на главных продуктовых страницах.
-2. Привести header, footer, CTA, карточки, тарифы и FAQ к единой mobile-first системе.
-3. Уточнить тексты о безопасности, контактах и юридических документах без неподтверждённых обещаний.
-4. Проверить локальные ссылки, запрещённые формулировки и статическую структуру, затем закоммитить и отправить изменения.
+Создать продающий SaaS-first сайт IZUMI IT COMPANY для японского рынка, где LINE Business OS — основная продуктовая линейка, а Workforce и Booking — отдельные SaaS-продукты.
 
 ## Текущее состояние
 
-- Стек: статические HTML/CSS/JS без фреймворка, сборщика и backend.
-- Ветка: `main`.
+- Стек: static HTML/CSS/JS, без framework, build system и backend.
+- Текущая ветка: `main`.
 - Remote: `origin https://github.com/tantik/iic-sass.git`.
 - Основные страницы: `index.html`, `products.html`, `pricing.html`, `security.html`, `company.html`, `contact.html`.
-- Юридические страницы: `privacy.html`, `terms.html`, `commercial-transaction.html`, `security-policy.html`, `data-handling-policy.html`, `support-policy.html`, `billing-policy.html`.
-- Папка `/old` отсутствует. Она не требуется и не должна восстанавливаться.
-- Старый сайт используется только как внешняя справка: https://izumiit.com/
-- Юридические страницы являются черновиками.
-- Форма обратной связи статическая; контакт выполняется через `mailto:izumi@izumiit.com`.
+- Legal pages: `privacy.html`, `terms.html`, `commercial-transaction.html`, `security-policy.html`, `data-handling-policy.html`, `support-policy.html`, `billing-policy.html`.
+- `/old` отсутствует и не требуется.
+- Старый сайт используется только как external reference: https://izumiit.com/
+- Legal pages являются draft и содержат обязательное предупреждение.
+- Contact form остаётся static/mailto: `izumi@izumiit.com`.
+- Текущий этап: Phase 1.6 visual/copy/trust polish.
 
 ## Файлы, над которыми работали
 
-- `README.md`
-- `handoff.md`
 - `index.html`
 - `products.html`
 - `pricing.html`
-- `security.html`
-- `company.html`
-- `contact.html`
-- `privacy.html`
-- `terms.html`
-- `commercial-transaction.html`
-- `security-policy.html`
-- `data-handling-policy.html`
-- `support-policy.html`
-- `billing-policy.html`
-- `assets/css/style.css`
-
-## Что изменилось
-
-- Главная страница расширена до полного SaaS-first лендинга с проблемами, решением, продуктами, тарифами, доверием, пилотом, FAQ и CTA.
-- Workforce и Booking оформлены как самостоятельные продукты; Custom Automation оставлен вторичным направлением.
-- Добавлены раздельные тарифы Workforce и Booking и обязательные пояснения.
-- Обновлены страницы безопасности, компании и контакта с осторожными формулировками.
-- Все юридические страницы помечены как черновики.
-- Введены единые mobile-first стили, адаптивные карточки, читаемая японская типографика и видимые юридические ссылки.
-- Обновлены title и description основных страниц.
-
-## Что пробовали и не сработало
-
-- В предыдущей итерации `git push -u origin main` через SSH завершился ошибкой: `git@github.com: Permission denied (publickey). fatal: Could not read from remote repository.` Позже remote был настроен на HTTPS.
-- В предыдущей итерации был обнаружен вложенный git-репозиторий `old/about`, который попал в индекс как mode 160000. Тогда был создан backup, вложенный `.git` удалён, а содержимое добавлено как обычные файлы. В текущем состоянии mode 160000 отсутствует, как и папка `/old`.
-- В этой итерации до реализации не выявлено ошибок, блокирующих работу.
-- Финальный `git add` / `git commit` не выполнен: sandbox вернул `fatal: Unable to create 'D:/project/iic-sass/.git/index.lock': Permission denied`. Запрос на расширенное разрешение не был подтверждён в доступное время, поэтому push не запускался.
-
-## Commit / Push
-
-- Phase 1.5 зафиксирован и отправлен: `eeba930 Polish SaaS-first website phase 1.5`.
-- Изменения Phase 1.6 намеренно не закоммичены и не отправлены: ожидается подтверждение пользователя.
-
-## Phase 1.6 — Visual UI/UX Polish
-
-Выполнена визуальная полировка без изменения позиционирования, стека, тарифной логики или юридических формулировок.
-
-Файлы, изменённые в Phase 1.6:
-
-- `assets/css/style.css`
-- `index.html`
-- `handoff.md`
-
-Изменения дизайн-системы:
-
-- расширены CSS variables для цветов, отступов, радиусов, теней и анимаций;
-- усилена японская типографика, иерархия заголовков и ритм секций;
-- улучшены sticky header, навигация, hero, CTA и footer;
-- переработаны карточки проблем, продуктов, функций и информационные блоки;
-- улучшена визуальная иерархия тарифов, выделение рекомендуемого плана и читаемость примечаний;
-- улучшены FAQ, формы, legal/disclaimer blocks, focus states и reduced-motion режим;
-- добавлены mobile-first ограничения, внутренний горизонтальный scroll навигации и безопасные grid-колонки без переполнения страницы.
-
-Ограничения и оставшиеся риски:
-
-- browser visual QA не удалось выполнить из-за недоступности локального browser connection; рекомендуется проверить desktop и mobile rendering вручную;
-- backend и framework не добавлялись;
-- production deployment не проверен;
-- юридическая проверка production-версии не проводилась, legal pages остаются черновиками.
-
-## Phase 1.7 — Premium Brand / UI Polish
-
-Phase 1.7 продолжает незакоммиченные изменения Phase 1.6. Позиционирование, тарифная логика и юридические формулировки не изменялись.
-
-Файлы, изменённые в Phase 1.7:
-
-- `index.html`
-- `products.html`
-- `pricing.html`
-- `security.html`
-- `company.html`
-- `contact.html`
 - `assets/css/style.css`
 - `assets/js/main.js`
 - `handoff.md`
 
-Brand assets:
+## Что изменилось
 
-- Использован существующий локальный wordmark `assets/images/logo_01.svg` в header всех основных страниц.
-- Использован существующий локальный wordmark `assets/images/logo_02.svg` в footer всех основных страниц.
-- Эти SVG ранее были перенесены из материалов старого сайта и обеспечивают визуальную преемственность бренда.
-- Новые assets не скачивались: автоматический доступ к `https://izumiit.com/` был заблокирован, а необходимые logo assets уже присутствовали локально.
-- Hotlink отсутствует; все ссылки на изображения относительные и локальные.
+- Hero получил более конкретный текст о勤務希望・予約連絡・報告 и product-like визуальную схему работы.
+- Добавлен блок `信頼の背景` с осторожно квалифицированными фактами: 2018年設立, 500社以上 только в Web制作・開発領域, ランサーズ 2021年上期 MVL賞, 比較ビズ 認定企業.
+- Усилены problem/solution тексты и outcome-first copy для Workforce, Booking и Custom Automation.
+- Workforce и Booking получили отдельные lead-тексты о снижении нагрузки на店長 и ручной работы.
+- Pilot framing заменён на спокойный блок導入前の確認 и демонстрацию до正式導入.
+- В pricing добавлены видимые `おすすめ` badges и пояснение о начале с одной店舗 без изменения цен.
+- Mobile navigation заменена на правый drawer с backdrop, scroll lock, закрытием по backdrop, Escape, ссылке и resize.
+- FAQ переведён на доступные button-based accordion items с `aria-expanded`, плавным раскрытием и независимым открытием нескольких ответов.
+- Добавлены спокойные staged/reveal/hover animations с поддержкой `prefers-reduced-motion`.
+- Meta description главной страницы обновлён под конкретную ценность продукта.
 
-Что улучшено:
+## Что пробовали и не сработало
 
-- Добавлено доступное mobile hamburger menu с `aria-expanded`, `aria-controls`, закрытием по повторному нажатию, ссылке, Escape и desktop resize.
-- Hero дополнен компактными product badges и CSS-схемой `LINE → Staff / Customer → Dashboard → Operation` без фальшивых screenshots или client logos.
-- Header переведён на единый glass/sticky layout, footer основных страниц — на единый brand/navigation layout.
-- Добавлены лёгкие entrance/reveal animations на CSS и IntersectionObserver. Контент остаётся видимым при отказе JS; `prefers-reduced-motion` учитывается.
-- Уплотнена mobile-композиция, устранена горизонтальная навигационная лента и добавлено управление overflow.
-
-Ограничения и безопасность:
-
-- Framework, backend, build tools, CDN и внешние библиотеки не добавлялись.
-- Новые legal/security claims не добавлялись; legal draft disclaimers сохранены.
-- Browser visual QA выполнить не удалось из-за недоступности browser connection. Рекомендуется ручная проверка desktop/mobile перед commit.
-- Изменения Phase 1.7 не закоммичены и не отправлены.
+- Визуальная проверка через встроенный browser не запустилась: `codex/sandbox-state-meta: missing field sandboxPolicy`. Поэтому browser visual QA остаётся ручным следующим шагом.
+- В предыдущей истории SSH push завершался ошибкой `git@github.com: Permission denied (publickey)`. Текущий remote использует HTTPS.
+- Build не требуется: сайт остаётся статическим.
+- Запрошенный commit не создан: `git add -A` завершился ошибкой `fatal: Unable to create 'D:/project/iic-sass/.git/index.lock': Permission denied`. Запрос расширенного разрешения не был подтверждён в доступное время. Push не запускался, поскольку нового commit нет.
 
 ## Риски
 
-- Юридические страницы — черновики и требуют юридической проверки.
-- Backend формы обратной связи пока отсутствует.
-- Production deployment пока не проверен.
-- Так как `/old` отсутствует, старые assets и portfolio полностью не мигрированы; старый сайт остаётся внешней справкой.
-- Нельзя заявлять:導入実績多数, LINE公式認定, ISO/Pマーク, 法定勤怠対応, 給与計算対応.
-- Тексты на японском требуют финальной редакторской проверки перед публикацией.
+- Legal pages are draft and require legal review.
+- Backend contact form отсутствует; используется static/mailto.
+- Production deployment не проверен.
+- Нельзя заявлять `SaaS導入実績500社` или связывать 500社以上 с LINE Business OS.
+- Нельзя заявлять `LINE公式認定`, `ISO27001`, `Pマーク`, `法定勤怠対応`, `給与計算対応`.
+- `500社以上` относится только к Web制作・開発領域, не к LINE Business OS.
+- Факты о наградах и認定 следует повторно сверить перед production publication.
 
 ## Следующий шаг
 
-- Финальная визуальная полировка в реальных браузерах и на мобильных устройствах.
-- Настроить и проверить deploy через Vercel или GitHub Pages.
-- Провести редакторскую проверку японских текстов.
-- Реализовать production contact form после выбора backend/форм-провайдера.
-- Перед production use провести юридическую проверку всех policy pages.
+- Проверить сайт визуально в браузере.
+- Проверить mobile navigation, backdrop, focus и scroll lock на реальном устройстве.
+- Подключить и проверить deploy.
+- Провести review японского текста.
+- Выполнить юридическую проверку legal pages.
+- Реализовать production contact form.

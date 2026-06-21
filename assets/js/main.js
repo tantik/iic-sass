@@ -2,6 +2,20 @@ document.addEventListener('DOMContentLoaded', function () {
   var toggle = document.querySelector('.menu-toggle');
   var nav = document.querySelector('.nav');
   var backdrop;
+  var scrollLockY = 0;
+
+  function lockBodyScroll() {
+    scrollLockY = window.scrollY || window.pageYOffset || 0;
+    document.body.style.top = (-scrollLockY) + 'px';
+    document.body.classList.add('menu-open');
+  }
+
+  function unlockBodyScroll() {
+    if (!document.body.classList.contains('menu-open')) return;
+    document.body.classList.remove('menu-open');
+    document.body.style.top = '';
+    window.scrollTo(0, scrollLockY);
+  }
 
   function closeMenu() {
     if (!toggle || !nav) return;
@@ -9,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
     toggle.setAttribute('aria-label', 'メニューを開く');
     nav.classList.remove('is-open');
     if (backdrop) backdrop.classList.remove('is-visible');
-    document.body.classList.remove('menu-open');
+    unlockBodyScroll();
     if (document.activeElement && nav.contains(document.activeElement)) toggle.focus();
   }
 
@@ -27,10 +41,12 @@ document.addEventListener('DOMContentLoaded', function () {
       toggle.setAttribute('aria-label', isOpen ? 'メニューを開く' : 'メニューを閉じる');
       nav.classList.toggle('is-open', !isOpen);
       backdrop.classList.toggle('is-visible', !isOpen);
-      document.body.classList.toggle('menu-open', !isOpen);
       if (!isOpen) {
+        lockBodyScroll();
         var firstLink = nav.querySelector('a');
         if (firstLink) firstLink.focus();
+      } else {
+        unlockBodyScroll();
       }
     });
 

@@ -16,7 +16,85 @@
 - Legal pages являются draft и содержат обязательное предупреждение.
 - Contact form остаётся static/mailto: `izumi@izumiit.com`.
 - Live test path: https://izumiit.com/new/
-- Текущий этап: Phase 1.9A-2 — Product mockup / 操作イメージ polish (после Phase 1.9A-Fix).
+- Текущий этап: Phase 1.9B — Mobile preflight fix + Pricing page visual polish (после Phase 1.9A-2).
+
+## Phase 1.9B — Mobile preflight fix + Pricing page visual polish
+
+### Файлы изменены в Phase 1.9B
+
+- `pricing.html` — полностью переработана в полноценную SaaS pricing-страницу.
+- `assets/css/style.css` — фикс horizontal overflow + scroll lock + новые pricing-компоненты.
+- `assets/js/main.js` — iOS-safe фикс mobile nav (position:fixed scroll lock).
+- `index.html` — только TASK 1 a11y (aria-hidden на декоративные `.flow-icon`).
+- `handoff.md`.
+- `assets/images/cursor.svg` — **удалён** (untracked, не использовался; custom cursor не реализуется).
+
+### TASK 0 — Mobile preflight (horizontal overflow + fixed menu)
+
+**Root cause горизонтального скролла (Problem A):**
+Mobile nav drawer `.nav` — `position: fixed; right: 0; transform: translateX(104%)` — в закрытом состоянии уезжает за правый край вьюпорта (его правый край оказывался на `scrollWidth ≈ 710px` при `clientWidth = 375px`; именно белая панель drawer создавала «пустую белую зону справа» на скриншоте). `body { overflow-x: hidden }` НЕ обрезал его, потому что:
+1) `.nav` — `position: fixed`, а fixed-элементы в Chrome дают scrollable overflow на уровне корня, который body не клипит;
+2) `.site-header` имеет `backdrop-filter`, из-за чего header становится containing block для fixed `.nav` (подтверждено через DevTools).
+
+**Как исправлено (Problem A):**
+- Добавлен `overflow-x: clip` (с fallback `overflow-x: hidden`) на **`html`** — это клипит off-screen fixed drawer на уровне корня (проверено: scrollWidth 710 → 375). `clip` предпочтён, т.к. не создаёт scroll-container и не ломает sticky-header. Тот же `clip` fallback добавлен и на `body`.
+- Симптом не маскировался: источник (off-screen fixed drawer) найден и обработан на корне; сам drawer оставлен анимированным (translateX), но теперь надёжно обрезается.
+
+**Root cause «меню уезжает вверх при скролле» (Problem B, iOS Safari):**
+`.site-header { backdrop-filter }` делает header containing block для fixed `.nav`, поэтому на iOS drawer ведёт себя как `absolute` относительно header и скроллится со страницей; плюс `overflow: hidden` на body на iOS не блокирует фоновый скролл.
+
+**Как исправлено (Problem B):**
+- CSS: `.menu-open .site-header { backdrop-filter: none }` — пока меню открыто, header перестаёт быть containing block, и `.nav` снова fixed относительно вьюпорта (проверено: `navTop=0`, `navHeight=100dvh`).
+- JS: вместо простого `overflow: hidden` реализован iOS-safe scroll lock — при открытии запоминается `scrollY`, на `body` ставится `position: fixed; top: -scrollY; width: 100%` (класс `.menu-open`), при закрытии стиль снимается и `window.scrollTo(0, scrollY)` восстанавливает позицию (проверено: позиция 742 сохранена и восстановлена, фоновый скролл заблокирован).
+- Поведение закрытия не изменено: backdrop / Escape / клик по ссылке / resize ≥820 по-прежнему закрывают меню; focus-trap сохранён; nav-ссылки работают.
+
+**QA scrollWidth/clientWidth (после фикса), pricing.html и index.html:**
+
+| width | до (pricing) | после (pricing) | после (index) |
+|------|------|------|------|
+| 320 | 710* | 320 = 320 | 320 = 320 |
+| 375 | 710 vs 375 | 375 = 375 | 375 = 375 |
+| 390 | 710* | 390 = 390 | 390 = 390 |
+| 430 | 710* | 430 = 430 | 430 = 430 |
+| 768 | — | 768 = 768 | 768 = 768 |
+| 1440 (desktop) | — | 1425 = 1425 | 1425 = 1425 |
+
+`*` — drawer-overflow проявлялся одинаково на всех mobile-ширинах. После фикса `scrollWidth === clientWidth` на всех проверенных ширинах; `document.scrollingElement` не имеет горизонтального скролла (`scrollLeftMax = 0`).
+
+### TASK 1 — Accessibility / cleanup
+
+- Декоративные буквы-иконки в hero `index.html` (`<span class="flow-icon">L / 人 / ▦ / ✓`) получили `aria-hidden="true"` (смысл несут соседние `<small>`/`<strong>`). Прочие декоративные символы (`!`, `✓`, `↓`, `→`, `＋`) уже реализованы через CSS `::before`/`content` или уже имели `aria-hidden`. Без переусложнения a11y.
+
+### TASK 2 — Pricing page visual polish
+
+- `pricing.html` переработан из плоских карточек в серьёзную SaaS pricing-страницу со структурой:
+  1. **Pricing hero** — h1 `必要なサービスだけを選べる料金プラン`, subcopy, trust/safety-row из 3 чипов (`1店舗から相談可能 / 必要なサービスだけ導入 / 個別見積り対応`), helper.
+  2. **Workforce** и **Booking** — раздельные секции, каждая с product-label, use-case lead, сеткой планов.
+  3. **Plan cards** — улучшена иерархия: plan-name → price → tax note → target size (boxed) → short description → `向いているケース` строка → CTA.
+  4. **どのプランが向いているか** — секция-гид (小さく試したい→Starter / 基本運用を整理したい→Standard / 承認・レポート・優先対応→Business / 複数店舗・個別要件→Enterprise).
+  5. **Cost transparency** — две карточки `料金に含まれるもの` (mint, ✓) и `別途費用になり得るもの` (warm, copper ＋): 初期設定/導入相談/運用確認 (зависит от плана/見積り), LINE公式アカウント利用料金 (別途), カスタマイズ・複数サービス (別途お見積り) + строка о финальных условиях по見積り/利用規約. Точные суммы НЕ выдуманы.
+  6. **Bottom CTA** — `自店舗に合うプランを確認する` + `人数、店舗数、現在の運用をもとにご案内します。` + primary CTA на contact + secondary link на products.
+  7. **Legal notes** — все 6 `※` заметок сохранены без изменений.
+- **Pricing values НЕ менялись** (Workforce 14,800/29,800/49,800/98,000〜; Booking 19,800/29,800/49,800/98,000〜; 税別; target sizes), бизнес-логика/legal/disclaimers не тронуты.
+- **Recommended badge** оставлен на **Standard** (Workforce и Booking) — как и было; логика не менялась. Standard визуально усилен (copper-рамка, badge, приподнят), что естественно делает его main recommended.
+- Визуал в едином стиле с homepage: mint/green/navy, мягкие карточки, тени, скругления; copper только точечно (featured-рамка, `＋` в extra-card). Без stock/AI images. Тёмные блоки только в CTA.
+- Mobile: карточки стекаются (featured Standard поднят наверх `order:-1`), нет таблиц с горизонтальным скроллом, CTA не переполняются, текст переносится корректно; нет горизонтального скролла на 320/375/390/430/768.
+- SEO/иерархия: h1 остаётся pricing-focused, h2/h3 логичны, текст concise, без keyword-stuffing, без запрещённых claim'ов.
+
+### TASK 3 — QA выполнено
+
+- Visual QA: index.html и pricing.html на 320/375/390/430/768 и desktop 1440 (browser DevTools emulation).
+- Horizontal overflow: `scrollWidth === clientWidth` на всех ширинах обеих страниц (см. таблицу выше).
+- Mobile menu: открытие (drawer fixed к вьюпорту, `top=0`, `height=100dvh`), скролл при открытом меню заблокирован, позиция сохранена/восстановлена, закрытие по backdrop работает, ссылки работают.
+- Legal grep по `*.html`: `LINE公式認定 / ISO27001 / Pマーク / 法定勤怠対応 / 給与計算対応 / 税務対応 / 労務管理対応 / 売上保証 / no-show完全防止 / SaaS導入500社 / LINE Business OS 導入500社 / 導入500社 / 500社が利用` — совпадений нет.
+- `500社以上` встречается только в `index.html` в контексте Web制作・開発領域 (2 места), не связан с SaaS / LINE Business OS.
+- Pricing values не изменены; все 6 legal notes видимы; custom cursor не реализован; новых framework/build/dependencies нет; `assets/images/cursor.svg` удалён.
+
+### Остаточные риски Phase 1.9B
+
+- Problem B (iOS fixed-menu) воспроизводился именно на iPhone SE/iOS Safari; в Chromium emulation он не повторялся (там scroll lock и так держал). Фикс (position:fixed body + снятие backdrop-filter) корректен по спецификации, но финальную проверку желательно сделать на реальном iOS-устройстве после deploy.
+- `overflow-x: clip` поддерживается современными браузерами; для старых остаётся fallback `overflow-x: hidden`.
+- Pricing — draft контент, требует финального ревью японского текста и юридической сверки перед production.
 
 ## Phase 1.9A-2 — Product mockup / 操作イメージ polish
 
@@ -164,9 +242,9 @@ Professional screenshot requirements:
 
 ## Следующий шаг
 
-- Phase 1.9B — Pricing page visual polish, только после approve product mockup direction (Phase 1.9A-2).
+- Phase 1.9B завершён (mobile preflight + pricing polish). Рекомендуемый следующий этап: Phase 1.9C — products.html / contact.html / security.html visual polish в едином стиле + повторный mobile QA на реальном iOS-устройстве (особенно фикс fixed-menu).
 - Проверить сайт визуально в браузере.
-- Проверить mobile navigation, backdrop, focus и scroll lock на реальном устройстве.
+- Проверить mobile navigation, backdrop, focus и scroll lock на реальном устройстве (iPhone SE / iOS Safari).
 - Подключить и проверить deploy.
 - Провести review японского текста.
 - Выполнить юридическую проверку legal pages.

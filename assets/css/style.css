@@ -77,6 +77,11 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 120px;
+  /* Contain any accidental horizontal overflow at the viewport root.
+     clip is preferred (no scroll container, keeps sticky header working);
+     hidden is the fallback for browsers without overflow: clip support. */
+  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -89,6 +94,7 @@ body {
   line-height: 1.85;
   overflow-wrap: anywhere;
   overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -387,8 +393,23 @@ p {
   transform: translateY(-7px) rotate(-45deg);
 }
 
+/* iOS-safe background scroll lock: fixing the body (with a JS-applied top
+   offset) reliably prevents scroll-through where overflow: hidden leaks. */
 .menu-open {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
   overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+/* While the drawer is open, drop the header's backdrop-filter so it no longer
+   acts as the containing block for the fixed .nav. This keeps the drawer
+   pinned to the viewport (not the header) on mobile, incl. iOS Safari. */
+.menu-open .site-header {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .nav-backdrop {
@@ -1916,5 +1937,222 @@ textarea {
   .reveal.reveal-pending {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* ============================================================
+   Pricing page polish (Phase 1.9B)
+   ============================================================ */
+.pricing-hero .lead {
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+.pricing-trust-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 10px;
+  margin: 1.6rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pricing-trust-row li {
+  position: relative;
+  padding: 7px 15px 7px 31px;
+  border: 1px solid rgba(22, 54, 90, .16);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, .85);
+  color: var(--color-brand-dark);
+  font-size: .82rem;
+  font-weight: 700;
+  line-height: 1.4;
+  box-shadow: 0 2px 8px rgba(11, 18, 32, .04);
+}
+
+.pricing-trust-row li::before {
+  position: absolute;
+  left: 13px;
+  content: "✓";
+  color: var(--color-line-dark);
+  font-weight: 900;
+}
+
+.pricing-product-head {
+  max-width: 760px;
+  margin-bottom: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+.pricing-product-head h2 {
+  margin-bottom: .6rem;
+}
+
+.pricing-product-lead {
+  margin: 0;
+  color: var(--color-text);
+  font-size: clamp(1rem, 2.2vw, 1.1rem);
+  line-height: 1.8;
+}
+
+.price-tax {
+  margin-top: .2rem;
+  color: var(--color-muted);
+  font-size: .78rem;
+}
+
+.plan-size {
+  margin: 0 0 .85rem;
+}
+
+.plan-desc {
+  margin: 0 0 1rem;
+  color: var(--color-muted);
+  font-size: .86rem;
+  line-height: 1.7;
+}
+
+.plan-fit {
+  margin: 0 0 1.1rem;
+  padding-top: .85rem;
+  border-top: 1px dashed var(--color-border);
+  color: var(--color-brand-dark);
+  font-size: .8rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.plan-fit span {
+  color: var(--color-muted);
+  font-weight: 800;
+}
+
+.plan-guide {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.plan-guide-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.plan-guide-case {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: .95rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.plan-guide-plan {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-soft);
+  color: var(--color-brand-dark);
+  font-size: .82rem;
+  font-weight: 900;
+  letter-spacing: .04em;
+}
+
+.cost-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.cost-card {
+  padding: clamp(1.4rem, 4vw, 2rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.cost-card h3 {
+  margin-bottom: 1rem;
+  font-size: clamp(1.1rem, 3vw, 1.3rem);
+}
+
+.cost-card-include {
+  border-color: #cfe9d8;
+  background: linear-gradient(160deg, #fff 60%, var(--color-line-soft));
+}
+
+.cost-card-extra {
+  background: var(--color-warm);
+}
+
+.cost-list {
+  display: grid;
+  gap: .75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cost-list li {
+  position: relative;
+  padding-left: 1.7rem;
+  color: var(--color-text);
+  font-size: .9rem;
+  line-height: 1.7;
+}
+
+.cost-list li::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  content: "✓";
+  color: var(--color-brand);
+  font-weight: 900;
+}
+
+.cost-card-extra .cost-list li::before {
+  content: "＋";
+  color: var(--color-accent-dark);
+}
+
+.cost-note {
+  margin: 1.4rem 0 0;
+  color: var(--color-muted);
+  font-size: .85rem;
+  text-align: center;
+}
+
+@media (min-width: 760px) {
+  .plan-guide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cost-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .plan-guide {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .plan-guide-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .plan-guide-plan {
+    margin-top: auto;
   }
 }

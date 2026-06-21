@@ -75,6 +75,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     var revealItems = document.querySelectorAll('.section, .card, .price-card, .trust-card, .workflow-card, .compare-card, .mockup-card, .hero-panel');
+
+    function revealAll() {
+      revealItems.forEach(function (item) {
+        item.classList.add('is-visible');
+      });
+    }
+
     var observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
@@ -88,5 +95,9 @@ document.addEventListener('DOMContentLoaded', function () {
       item.style.setProperty('--reveal-delay', Math.min(index % 4, 3) * 70 + 'ms');
       observer.observe(item);
     });
+
+    // Safety fallback: never leave any section hidden (e.g. full-page
+    // screenshot tools that don't scroll, or a stalled observer).
+    window.setTimeout(revealAll, 2600);
   }
 });

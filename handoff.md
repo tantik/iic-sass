@@ -16,7 +16,27 @@
 - Legal pages являются draft и содержат обязательное предупреждение.
 - Contact form остаётся static/mailto: `izumi@izumiit.com`.
 - Live test path: https://izumiit.com/new/
-- Текущий этап: Phase 1.9A — Global visual system + Home page visual polish.
+- Текущий этап: Phase 1.9A-Fix — Home visual stabilization (после Phase 1.9A).
+
+## Phase 1.9A-Fix — Home visual stabilization
+
+### Файлы изменены в Phase 1.9A-Fix
+
+- `assets/css/style.css`
+- `assets/js/main.js`
+- `handoff.md`
+- `index.html` НЕ менялся — усиление hero достигнуто полностью через CSS.
+
+### Что изменилось в Phase 1.9A-Fix
+
+- Button hover blinking исправлен: причина мерцания — `transition` фона между `linear-gradient` и сплошным цветом (gradient → solid не интерполируется и «блымает» на Windows Chrome). Теперь `.button` имеет постоянный `background-image: var(--gradient-navy)` + сплошной `background-color` fallback, а hover больше НЕ меняет фон. Обратная связь только через `box-shadow`, `border-color` и `transform: translateY(-1px)`. Transition сокращён до safe-свойств: `transform / box-shadow / border-color / color / background-color` по .18s ease.
+- Hover-эффекты сделаны спокойнее/премиальнее: `.card`, `.trust-card`, `.mockup-card` подъём уменьшен с `translateY(-3px)` до `-2px`; primary button с `-2px` до `-1px`; убран резкий repaint фона.
+- Hero visual усилен без перестройки: на desktop колонки `.hero-grid` отданы панели больше места (`minmax(0,1.05fr) minmax(420px,.95fr)`), увеличены padding `.hero-panel` и `.flow-stage`, укрупнены `.flow-node` (текст/иконки), `.flow-summary`, `.status-chip` и `.hero-panel-head h2` — панель читается как более «настоящий» SaaS-dashboard. HTML hero и controlled 2-line headline сохранены.
+- CTA hierarchy стабилизирована: primary `.button` чуть массивнее (`padding: 12px 24px`) и остаётся доминирующим navy; secondary спокойный белый outline; добавлен читаемый `focus-visible` (светлый outline) для кнопок на тёмных секциях `.cta-section / .contact-final / .stat-box`.
+- Readability/иерархия карточек: укрупнены `.workflow-card h3` и `.mockup-card h3`, чуть увеличены отступы — меньше однообразной «мелочи».
+- Reveal/no-JS fallback проверен и усилен: контент по умолчанию видим (скрывает только JS-класс `reveal-pending`), `prefers-reduced-motion` соблюдён; в `main.js` добавлен safety `setTimeout(revealAll, 2600)`, чтобы ни одна секция не оставалась невидимой навсегда и full-page screenshots не имели пустых зон (например, инструменты без скролла).
+- Custom cursor намеренно НЕ реализован (B2B SaaS, usability/accessibility). В репозитории есть untracked `assets/images/cursor.svg` — он НЕ используется как system cursor и НЕ коммитился.
+- Pricing / business logic / legal / public тексты НЕ менялись. `pricing.html`, `index.html`, legal pages не затронуты. Проверка запрещённых формулировок (LINE公式認定, ISO27001, Pマーク, セキュリティ完全保証, 100%安全, 法定勤怠対応, 給与計算対応, 税務対応, 労務管理対応, 売上保証, no-show完全防止, SaaS導入500社, 導入500社, 500社が利用中) — совпадений в публичных страницах нет; `500社以上` относится только к Web制作・開発領域.
 
 ## Phase 1.9A — Global visual system + Home page visual polish
 
@@ -119,7 +139,7 @@ Professional screenshot requirements:
 
 ## Следующий шаг
 
-- Phase 1.9B — pricing page visual polish, только после утверждения home visual direction.
+- Phase 1.9B — Pricing page visual polish, только после approve home hover/stability (Phase 1.9A-Fix).
 - Проверить сайт визуально в браузере.
 - Проверить mobile navigation, backdrop, focus и scroll lock на реальном устройстве.
 - Подключить и проверить deploy.

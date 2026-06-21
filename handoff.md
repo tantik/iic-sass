@@ -16,7 +16,82 @@
 - Legal pages являются draft и содержат обязательное предупреждение.
 - Contact form остаётся static/mailto: `izumi@izumiit.com`.
 - Live test path: https://izumiit.com/new/
-- Текущий этап: Phase 1.9B — Mobile preflight fix + Pricing page visual polish (после Phase 1.9A-2).
+- Текущий этап: Phase 1.9C — Products page visual polish + Pricing minor completion cleanup (после Phase 1.9B).
+
+## Phase 1.9C — Products page visual polish + Pricing cleanup
+
+### Файлы изменены в Phase 1.9C
+
+- `products.html` — полностью переработана из минифицированного «текстового списка услуг» в полноценную SaaS service-selection страницу.
+- `pricing.html` — minor cleanup: списки в cost-cards и plan-guide приведены к формулировкам из ТЗ (pricing values НЕ менялись).
+- `assets/css/style.css` — добавлены компоненты products-страницы (Phase 1.9C блок в конце файла).
+- `handoff.md`.
+- `assets/images/cursor.svg` — отсутствует (untracked не существует; custom cursor не реализуется).
+
+### TASK 0 — Mobile preflight (повторная проверка перед products)
+
+Проверены `index.html` и `pricing.html` через браузер (CDP `Emulation.setDeviceMetricsOverride`):
+
+| width | index overflow | pricing overflow |
+|------|------|------|
+| 320 | 0 | 0 |
+| 375 | 0 | 0 |
+| 390 | 0 | 0 |
+| 430 | 0 | 0 |
+| 768 | 0 | 0 |
+| 1440 | 0 (1425=1425) | 0 |
+
+`document.documentElement.scrollWidth === clientWidth` на всех ширинах. Mobile menu (index, 375px) проверено программно: при открытии `navTop=0`, `navHeight=100dvh` (фикс к вьюпорту), `body position:fixed` (scroll lock), горизонтального скролла нет; при попытке скролла меню НЕ уезжает вверх (`navTop=0`); при закрытии `aria-expanded=false`, drawer уходит off-screen, `body position:static`, скролл восстановлен. `cursor.svg` отсутствует.
+
+### TASK 1 — Pricing minor completion cleanup
+
+- Секции `どのプランが向いているか` и `料金に含まれるもの・別途費用になり得るもの` уже присутствовали (Phase 1.9B). В 1.9C их формулировки приведены к примерам из ТЗ:
+  - **plan-guide**: `小さく試したい→Starter / 基本運用を整理したい→Standard / 承認・通知・レポートを強めたい→Business / 複数店舗・個別要件がある→Enterprise`.
+  - **料金に含まれるもの**: 各プランのサービス利用 / 基本的な導入相談 / 運用確認 / 管理画面の利用 / サポート範囲の確認.
+  - **別途費用になり得るもの**: LINE公式アカウントの利用料金 / 個別カスタマイズ / 複数サービスの導入 / 複数店舗・大規模運用 / 特別な設定・運用サポート.
+- Точные суммы (setup fee и т.п.) НЕ выдуманы; «всё включено» не утверждается. Финальная формулировка сохранена: `正式な料金・契約条件は、個別のお見積りおよび利用規約をご確認ください。`
+- **Pricing values НЕ менялись** (Workforce 14,800/29,800/49,800/98,000〜; Booking 19,800/29,800/49,800/98,000〜; 税別; target sizes). Все 6 legal notes сохранены.
+
+### TASK 2 — Products page visual polish
+
+`products.html` переработан в service-selection страницу со структурой:
+
+1. **Product hero** — eyebrow `サービス`, compact product pills (`Workforce / Booking / Custom Automation`, через `.hero-badges.hero-badges-center`), h1 `LINE Business OS のサービス` (один h1), subcopy из ТЗ.
+2. **どのサービスから始めるか** — 3 product-cards (Workforce navy / Booking blue / Custom Automation copper top-border) с label, name, target line, short desc и CTA-ссылками (`Workforceを相談する / Bookingを相談する / 個別相談する`) на anchor-секции.
+3. **Workforce detailed** (`#workforce`, section-alt) — product-label `LINE Business OS Workforce`, headline, product-lead, explanation, `.feature-list` (10 функций), под ним `.detail-extra`: `解決できること` (4 mint-bordered `.solve-card`) + `向いている店舗` (`.fit-card` + check-list). Safe note: `本サービスは、給与計算・法定勤怠管理・税務・労務管理を目的としたシステムではありません。`
+4. **Booking detailed** (`#booking`) — аналогичная структура, alternating layout (features слева, текст справа — через существующие `.product-detail` reorder-правила). Safe note: `自動リマインドにより、来店忘れリスクを軽減しやすくします。` (НЕ `no-show完全防止`).
+5. **Custom Automation** (`#custom`, section-warm) — text + `設計できること（例）` card (check-list: LINEを入口にした申請・報告フロー / 管理画面での確認 / 通知・リマインド整理 / 既存業務に合わせたステップ設計). Note: `対応範囲と料金は、業務内容を確認したうえで個別にお見積りします。`
+6. **Future services** — `これらは検討段階であり、現在提供中のサービスではありません。` сохранено; будущие идеи не поданы как доступные услуги.
+7. **Bottom CTA** — navy gradient `.cta-section`: `店舗に合うサービスから始めませんか？` + subcopy из ТЗ + primary `導入相談する` (contact.html) + secondary `料金を見る` (pricing.html).
+
+CSS (Phase 1.9C блок): `.hero-badges-center`, `.detail-extra` (2-col ≥820px), `.detail-subhead` (mint accent line), `.solve-grid`/`.solve-card` (mint left-border, hover lift), `.detail-fit`, `.detail-examples`. Всё на существующих токенах (mint/green/navy, soft cards, rounded, subtle shadows). Без stock/AI images, без реальных скриншотов/имён.
+
+### TASK 3/4 — Visual + SEO
+
+- Единый стиль с homepage/pricing: mint/green/navy, copper только точечно (product-label, Custom Automation top-border). Тёмные блоки только в bottom CTA.
+- Один `h1` (`LINE Business OS のサービス`), логичная иерархия h2 (секции) → h3 (имена продуктов / sub-headings) → h4 (solve-cards). Японский текст concise, без keyword-stuffing.
+- Имена продуктов консистентны: `LINE Business OS Workforce`, `LINE Business OS Booking`, `Custom Automation`.
+
+### TASK 5 — QA результат
+
+- **Horizontal overflow** (CDP, products.html): 320/375/390/430/768/1440 → `scrollWidth - clientWidth = 0` на всех. Index и pricing — также 0 (см. TASK 0).
+- **Mobile menu**: идентичная разметка/JS на всех страницах; проверено на index (fixed-to-viewport, scroll lock, не уезжает вверх, закрывается). Products использует тот же header/nav/main.js.
+- **CTA buttons**: `.button-row .button` на ≤420px → `width:100%`; CTA не переполняются; product-cards и solve-cards стекаются (1 колонка <560/820px).
+- **Heading hierarchy**: логична (1×h1).
+- **Pricing values**: не изменены. Legal notes (6×`※`) видимы и не тронуты.
+- **`500社以上`**: только `index.html` (2 места) в контексте Web制作・開発領域; в products.html `500社` отсутствует.
+- **Forbidden grep** по `*.html` (`LINE公式認定 / ISO27001 / Pマーク / 法定勤怠対応 / 給与計算対応 / 税務対応 / 労務管理対応 / 売上保証 / no-show完全防止 / SaaS導入500社 / LINE Business OS 導入500社 / 導入500社`): **0 совпадений**.
+- Custom cursor НЕ реализован; новых framework/build/dependencies нет; стек остаётся static HTML/CSS/JS.
+
+### Остаточные риски Phase 1.9C
+
+- Browser visual QA выполнен через Chromium CDP emulation; финальную проверку mobile (особенно iOS Safari fixed-menu) желательно повторить на реальном устройстве после deploy.
+- Products — draft японский контент, требует финального ревью и юридической сверки перед production.
+- Screenshot-проверка одного mobile-кадра была заблокирована auto-review; overflow подтверждён программно (CDP measurements), desktop-секции подтверждены скриншотами.
+
+### Следующий рекомендуемый этап
+
+- Phase 1.9D — `contact.html` / `security.html` / `company.html` visual polish в едином стиле + повторный mobile QA на реальном iOS-устройстве; затем подготовка анонимизированных product screenshots на замену HTML/CSS mockups.
 
 ## Phase 1.9B — Mobile preflight fix + Pricing page visual polish
 

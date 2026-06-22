@@ -21,7 +21,7 @@ header('X-Form-Handler-Version: web3forms-validation-fix');
 // ---- Configuration ---------------------------------------------------------
 const FROM_NAME      = 'IZUMI IT COMPANY';
 const ADMIN_SUBJECT  = '【LINE Business OS】導入相談フォーム';
-const BACKUP_EMAIL   = 'konstantin.chvykov@gmail.com';
+const BACKUP_EMAIL   = 'izumi@izumiit.com';
 const PAGE_URL       = 'https://izumiit.com/contact.html';
 const WEB3FORMS_URL  = 'https://api.web3forms.com/submit';
 const MESSAGE_MAX    = 1200;

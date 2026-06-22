@@ -16,7 +16,64 @@
 - Legal pages — публичный launch (Phase 2.3): публичное draft-предупреждение удалено; внутренний legal-risk note хранится только здесь в handoff.
 - Contact form: **Phase 2.4** — `api/form.php` теперь серверный **Web3Forms-прокси** (`contact.html` → `api/form.php` → `https://api.web3forms.com/submit`), без PHP `mail()`/`mb_send_mail`, без backend-framework/зависимостей/БД. Access key загружается только из `api/form-provider.local.php` (gitignored) или env `WEB3FORMS_ACCESS_KEY`; в commit ключ никогда не попадает. Подробности — в разделе «Phase 2.4» ниже.
 - Live root: https://izumiit.com/ (форма `POST` → `api/form.php`). Старый сайт только на `/old21062026/`.
-- Текущий этап: Phase 2.6 — исправлена обработка success-ответа Web3Forms (см. ниже).
+- Текущий этап: Phase 2.7 — launch readiness cleanup (P0/P1). См. секцию ниже.
+
+## Phase 2.7 — Launch readiness cleanup (P0/P1) (2026-06-22)
+
+Подготовка к active-sales readiness. Сайт НЕ редизайнился, цены/legal/claims НЕ менялись, форма остаётся client-side Web3Forms (`contact.html` → `https://api.web3forms.com/submit`), PHP-прокси НЕ реактивирован.
+
+### Repo↔deploy image drift (resolved)
+
+- Все live-required ассеты уже трекаются в git (`git ls-files assets/images`): `favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `og-image.png`, `logo_01.svg`, `logo_02.svg`, `biz_partner_type2.png`, `team-main.jpg`, `team-work.jpg`, `team-office.jpg`, `icon-16.png`, `icon-32.png`, `ogp.png`, `01.png`. Дрейфа нет — добавлять/удалять ничего не потребовалось.
+- WebP-версий (`team-*.webp`) в репозитории и локально НЕТ. Не выдуманы, не добавлялись.
+- `git status` по `assets/` чистый: удалённых/изменённых ассетов нет.
+
+### Personal Gmail removed from committed source
+
+- Персональный Gmail (`konstantin.chvykov@…`) удалён из всех **трекаемых** файлов: `api/form-provider.example.php` (теперь placeholder `admin@example.com` / `backup@example.com`), `api/form.php` (`BACKUP_EMAIL` → `izumi@izumiit.com`, неактивный fallback), и из исторических заметок в `handoff.md` (заменён на `<バックアップ用メール（非公開・サーバ側設定）>`).
+- `api/form-provider.local.php` НЕ трогался (gitignored, server-local).
+- Проверка: `git grep -n "konstantin"` → 0 совпадений в трекаемых файлах.
+
+### Old site de-index (`/old21062026/`)
+
+- `/old21062026/` файлы **не в репозитории** (server-only), поэтому meta-noindex из репо проставить нельзя.
+- Repo-level: `robots.txt` обновлён — добавлен `Disallow: /old21062026/` (+ сохранён `Sitemap`).
+- **ВАЖНО (server-side, предпочтительно):** robots `Disallow` сам по себе НЕ удаляет уже проиндексированные URL быстро. Для надёжной деиндексации добавить на сервере для `/old21062026/`:
+  - HTTP-заголовок `X-Robots-Tag: noindex, nofollow` (nginx/apache), **или**
+  - вручную `<meta name="robots" content="noindex, nofollow">` в `<head>` старых HTML-файлов на сервере.
+- После деиндексации можно дополнительно запросить удаление URL через Google Search Console.
+
+### Web3Forms access key rotation (HANDOFF — выполняет оператор)
+
+Текущий ключ в `contact.html` (`access_key`): `c9571528-a71a-431f-9b72-973d4cc73824`. Он был раскрыт при настройке — рекомендуется ротация. Агент новый ключ НЕ генерирует. Шаги для оператора:
+
+1. Перегенерировать access key в дашборде Web3Forms.
+2. Если Web3Forms поддерживает domain restriction / allowed domains — ограничить доменами: `izumiit.com` (и `www.izumiit.com`, если используется).
+3. Заменить hidden `access_key` в `contact.html` на новый ключ.
+4. Загрузить `contact.html` на сервер.
+5. Отправить реальную заявку через браузерную форму (НЕ curl — free plan client-side).
+6. Подтвердить: success-сообщение появляется; submission записан в Web3Forms dashboard; письмо пришло; проверена папка спам.
+
+Когда оператор даст новый ключ — обновить `access_key` в `contact.html` и закоммитить. Ключ НЕ дублировать в `api/form.php` и нигде кроме `contact.html`.
+
+### Contact form a11y (honeypot) — проверено
+
+- Визуальный honeypot `website`: обёртка `.form-hp` имеет `aria-hidden="true"`, input — `tabindex="-1"` + `autocomplete="off"`. Уже соответствует требованиям (изменений не потребовалось).
+- `botcheck`: `display:none` + `tabindex="-1"` + `autocomplete="off"` + `aria-hidden="true"` — скрыт. Web3Forms spam-поведение не тронуто.
+
+### Server-side tasks remaining (NOT from repo — конфиг сервера nginx/apache)
+
+Эти задачи выполняются на сервере, из репозитория НЕ конфигурируются:
+
+1. **HTTP→HTTPS 301 redirect**: `http://izumiit.com/*` → `https://izumiit.com/*`.
+2. После подтверждения редиректа — baseline security headers:
+   - `X-Content-Type-Options: nosniff`
+   - `Referrer-Policy: strict-origin-when-cross-origin`
+   - `X-Frame-Options: SAMEORIGIN`
+   - `Strict-Transport-Security` (HSTS) — **только после** стабильного HTTPS.
+3. Для `/old21062026/`: добавить `X-Robots-Tag: noindex, nofollow` (если доступна серверная конфигурация).
+
+nginx из репозитория НЕ менялся — это server-only handoff.
 
 ## Phase 2.6 — Fix Web3Forms success state handling (2026-06-22)
 
@@ -109,7 +166,7 @@
 - Access key **никогда** не присутствует в `contact.html` / `assets/js/main.js` / любом коммиченном файле.
 - Config priority: (1) `api/form-provider.local.php`, (2) env `WEB3FORMS_ACCESS_KEY`, (3) если нет → HTTP 500 `{"ok":false,"message":"config_missing"}`.
 - `api/form-provider.local.php` — **gitignored** (запись `api/form-provider.local.php` в `.gitignore`), создаётся вручную на сервере с реальным ключом. В репозитории — только `api/form-provider.example.php` (placeholder `PASTE_ACCESS_KEY_HERE`).
-- Отправка: cURL при наличии, fallback `stream_context_create`. Поля в Web3Forms: `access_key`, `subject`=`【LINE Business OS】導入相談フォーム`, `from_name`=`IZUMI IT COMPANY`, `name`, `email`, `company`, `phone`, `business_type`, `store_count`, `staff_count`, `service`, `line_official`, `timeline`, `message`, `page`=`https://izumiit.com/contact.html`, `backup_email`=`konstantin.chvykov@gmail.com`.
+- Отправка: cURL при наличии, fallback `stream_context_create`. Поля в Web3Forms: `access_key`, `subject`=`【LINE Business OS】導入相談フォーム`, `from_name`=`IZUMI IT COMPANY`, `name`, `email`, `company`, `phone`, `business_type`, `store_count`, `staff_count`, `service`, `line_official`, `timeline`, `message`, `page`=`https://izumiit.com/contact.html`, `backup_email`=`<バックアップ用メール（非公開・サーバ側設定）>`.
 - Responses (JSON, `X-Content-Type-Options: nosniff`): success → 200 `{"ok":true}`; Web3Forms fail → 500 `send_failed`; validation fail → 422 `validation_error`; config missing → 500 `config_missing`; GET/не-POST → 405 `method_not_allowed`. Honeypot `website` заполнен → 200 `{"ok":true}` без отправки. PII в файлы/логи не пишется; детальные ошибки провайдера пользователю не показываются.
 
 ### TASK 2 — Reduced contact-form friction
@@ -227,7 +284,7 @@ curl -i -X POST https://izumiit.com/api/form.php \
 
 - Убран `Cc:` на Gmail. Теперь шлются **2 отдельных admin-письма**:
   1. To `izumi@izumiit.com`, Subject `【LINE Business OS】導入相談フォーム`.
-  2. To `konstantin.chvykov@gmail.com`, Subject `【LINE Business OS】導入相談フォーム（コピー）`.
+  2. To `<バックアップ用メール（非公開・サーバ側設定）>`, Subject `【LINE Business OS】導入相談フォーム（コピー）`.
 - `{ok:true}` возвращается только если **оба** `mail()` вернули `true` (иначе HTTP 500 `send_failed`).
 - Client auto-reply (Subject `お問い合わせを承りました｜IZUMI IT COMPANY`) — best-effort, его провал не блокирует success (PII в файлы не пишется; отмечено комментарием в коде).
 - `Reply-To` обоих admin-писем = email клиента; `From: IZUMI IT COMPANY <izumi@izumiit.com>`; header-sanitization (`clean_header`) сохранён; внутренние ошибки пользователю не показываются.
@@ -268,7 +325,7 @@ curl -i -X POST https://izumiit.com/api/form.php \
 
 - **НЕ выполнен агентом** (нет доступа к серверу для загрузки и нельзя слать реальные письма). Выполнить вручную после загрузки `api/form.php`:
   1. POST с реального тестового email → ожидать HTTP 200 + `{ok:true}`.
-  2. Проверить приход на `izumi@izumiit.com`, отдельной копии на `konstantin.chvykov@gmail.com`, auto-reply на тестовый email, включая папки спама.
+  2. Проверить приход на `izumi@izumiit.com`, отдельной копии на `<バックアップ用メール（非公開・サーバ側設定）>`, auto-reply на тестовый email, включая папки спама.
   3. Если `{ok:true}`, но Gmail не получает — зафиксировать: izumi получил? / Gmail получил? / auto-reply получил? — и переходить на SMTP/API-отправитель.
 
 ### Остаточные риски Phase 2.3
@@ -388,7 +445,7 @@ curl -i -X POST https://izumiit.com/api/form.php \
 
 ### Live email test результат
 
-- **НЕ выполнен** (требует live deploy `/new/` + реальный почтовый сервер; PHP локально недоступен). После push нужно: отправить тестовую заявку с live `/new/contact.html`; подтвердить получение на `izumi@izumiit.com` + Cc `konstantin.chvykov@gmail.com`; подтвердить auto-reply на тестовый email; проверить спам; убедиться, что success только при `{ ok:true }`.
+- **НЕ выполнен** (требует live deploy `/new/` + реальный почтовый сервер; PHP локально недоступен). После push нужно: отправить тестовую заявку с live `/new/contact.html`; подтвердить получение на `izumi@izumiit.com` + Cc `<バックアップ用メール（非公開・サーバ側設定）>`; подтвердить auto-reply на тестовый email; проверить спам; убедиться, что success только при `{ ok:true }`.
 
 ### Остаточные риски Phase 2.1
 
@@ -421,7 +478,7 @@ curl -i -X POST https://izumiit.com/api/form.php \
 
 ### Email recipients / cc / auto-reply behavior
 
-- Admin **To**: `izumi@izumiit.com`; **Cc**: `konstantin.chvykov@gmail.com`; **Reply-To**: email отправителя; **Subject**: `【LINE Business OS】導入相談フォーム`.
+- Admin **To**: `izumi@izumiit.com`; **Cc**: `<バックアップ用メール（非公開・サーバ側設定）>`; **Reply-To**: email отправителя; **Subject**: `【LINE Business OS】導入相談フォーム`.
 - Client **auto-reply**: только на email пользователя (Gmail в копию НЕ ставится); **Reply-To**: `izumi@izumiit.com`; **Subject**: `お問い合わせを承りました｜IZUMI IT COMPANY`.
 - **From**: `IZUMI IT COMPANY <izumi@izumiit.com>` (если хостинг отклонит — поменять `FROM_EMAIL` на разрешённый домен-адрес, Reply-To оставить `izumi@izumiit.com`; в файле есть комментарий).
 - Письма plain-text (UTF-8, 8bit); subject через `mb_encode_mimeheader`. Admin-тело содержит все поля + 送信日時 + IP. Auto-reply провал НЕ блокирует admin-success.
@@ -457,7 +514,7 @@ curl -i -X POST https://izumiit.com/api/form.php \
 
 ### Live QA результат
 
-- **НЕ выполнен** (требует deploy на `/new/` и реального почтового сервера). После push нужно: отправить тестовую заявку с live `/new/contact.html`; подтвердить получение на `izumi@izumiit.com` и `konstantin.chvykov@gmail.com`; подтвердить auto-reply на тестовый email; проверить папку спам; убедиться, что success показывается только после `{ ok:true }`; проверить отсутствие персональных данных в console.
+- **НЕ выполнен** (требует deploy на `/new/` и реального почтового сервера). После push нужно: отправить тестовую заявку с live `/new/contact.html`; подтвердить получение на `izumi@izumiit.com` и `<バックアップ用メール（非公開・サーバ側設定）>`; подтвердить auto-reply на тестовый email; проверить папку спам; убедиться, что success показывается только после `{ ok:true }`; проверить отсутствие персональных данных в console.
 
 ### Остаточные риски Phase 2.0
 
@@ -503,14 +560,14 @@ curl -i -X POST https://izumiit.com/api/form.php \
 
 - Progressive enhancement: на submit JS делает `preventDefault`, валидирует required (お名前 / 会社名・店舗名 / メールアドレス / 現在の課題・相談内容) + базовый формат email; при ошибке показывает видимый текст в `#contactFormMessage` и ставит фокус на первое незаполненное поле (навигация НЕ происходит).
 - Mailto собирается через `encodeURIComponent` для subject и body; CC также кодируется. Множественный выбор сервисов поддержан (`querySelectorAll('input[name="service"]:checked')`, объединение через `、`).
-- `to=izumi@izumiit.com`, `cc=konstantin.chvykov@gmail.com`, `subject=LINE Business OS 導入相談`, body — форматированный японский текст (お名前 / 会社名・店舗名 / メールアドレス / 電話番号 / 業種 / 店舗数 / スタッフ数 / 興味のあるサービス / LINE公式アカウント / 希望する導入時期 / 現在の課題・相談内容). Незаполненные select → `未選択`, пустой телефон → `未記入`.
+- `to=izumi@izumiit.com`, `cc=<バックアップ用メール（非公開・サーバ側設定）>`, `subject=LINE Business OS 導入相談`, body — форматированный японский текст (お名前 / 会社名・店舗名 / メールアドレス / 電話番号 / 業種 / 店舗数 / スタッフ数 / 興味のあるサービス / LINE公式アカウント / 希望する導入時期 / 現在の課題・相談内容). Незаполненные select → `未選択`, пустой телефон → `未記入`.
 - Если итоговый mailto-URL слишком длинный (> ~1900 симв.), показывается понятное предупреждение с просьбой сократить текст (навигация НЕ происходит).
 - Безопасность: НЕ показывается «送信完了しました»; НЕ имитируется серверная отправка; нет backend/API/serverless/dependencies; данные НЕ пишутся в localStorage/sessionStorage; персональные данные НЕ логируются в console; данные не отправляются third-party.
 - НЕ показывается ложное подтверждение отправки — текст явно говорит, что откроется почтовое приложение и письмо нужно подтвердить/отправить вручную.
 
 ### Mailto QA результат
 
-- Сгенерированный mailto проверен (заполненная форма, demo-данные): `len=1466` (< safe limit 1900), `to=izumi@izumiit.com`, `cc=konstantin.chvykov%40gmail.com`, `subject=LINE%20Business%20OS%20導入相談`, body корректно закодирован (`%0A` переносы) и при декодировании точно соответствует требуемому формату.
+- Сгенерированный mailto проверен (заполненная форма, demo-данные): `len=1466` (< safe limit 1900), `to=izumi@izumiit.com`, `cc=<バックアップ用メール（非公開・サーバ側設定）>`, `subject=LINE%20Business%20OS%20導入相談`, body корректно закодирован (`%0A` переносы) и при декодировании точно соответствует требуемому формату.
 - Validation: при пустых required submit заблокирован, `#contactFormMessage` = `次の必須項目をご入力ください：お名前、メールアドレス` (класс `is-error`), фокус ушёл на お名前, URL не изменился.
 
 ### Mobile / overflow QA (CDP Emulation.setDeviceMetricsOverride, локальный http.server)

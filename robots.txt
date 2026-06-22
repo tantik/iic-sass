@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /old21062026/
 
 Sitemap: https://izumiit.com/sitemap.xml

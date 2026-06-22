@@ -14,9 +14,118 @@
 - `/old` отсутствует и не требуется.
 - Старый сайт используется только как external reference: https://izumiit.com/
 - Legal pages — публичный launch (Phase 2.3): публичное draft-предупреждение удалено; внутренний legal-risk note хранится только здесь в handoff.
-- Contact form: **Phase 2.3** — native PHP (`api/form.php`, PHP `mail()`), без backend-framework/зависимостей/БД. Отправляются **два отдельных admin-письма** (primary `izumi@izumiit.com` + dedicated Gmail-копия `konstantin.chvykov@gmail.com`), `{ok:true}` только если оба `mail()` вернули success; auto-reply клиенту best-effort. Cc больше НЕ используется.
+- Contact form: **Phase 2.4** — `api/form.php` теперь серверный **Web3Forms-прокси** (`contact.html` → `api/form.php` → `https://api.web3forms.com/submit`), без PHP `mail()`/`mb_send_mail`, без backend-framework/зависимостей/БД. Access key загружается только из `api/form-provider.local.php` (gitignored) или env `WEB3FORMS_ACCESS_KEY`; в commit ключ никогда не попадает. Подробности — в разделе «Phase 2.4» ниже.
 - Live root: https://izumiit.com/ (форма `POST` → `api/form.php`). Старый сайт только на `/old21062026/`.
 - Текущий этап: Phase 2.3 — Public launch legal text + contact email reliability + favicon/OGP deploy readiness.
+
+## Phase 2.4 — Web3Forms contact backend + conversion copy cleanup (2026-06-22)
+
+### TASK 0 — Git preflight
+
+- На `main`; `main` синхронизирован с `origin/main` (`git status` → up to date). Перед редактированием в working tree были незакоммиченные правки от подготовки этой фазы (`.gitignore`, `api/form.php`) + untracked `api/form-provider.example.php`, `COPY_AUDIT_REPORT.md`, `QA_FULL_AUDIT_REPORT.md`, `api/form-provider.local.php`.
+- QA-отчёты (`COPY_AUDIT_REPORT.md`, `QA_FULL_AUDIT_REPORT.md`) **НЕ коммитятся** (если не запрошено явно). `api/form-provider.local.php` **НЕ коммитится** (содержит реальный access key, gitignored).
+
+### TASK 1 — Web3Forms backend (`api/form.php`)
+
+- `api/form.php` — серверный прокси к Web3Forms. Поток: `contact.html` (POST) → `api/form.php` → `https://api.web3forms.com/submit`.
+- Access key **никогда** не присутствует в `contact.html` / `assets/js/main.js` / любом коммиченном файле.
+- Config priority: (1) `api/form-provider.local.php`, (2) env `WEB3FORMS_ACCESS_KEY`, (3) если нет → HTTP 500 `{"ok":false,"message":"config_missing"}`.
+- `api/form-provider.local.php` — **gitignored** (запись `api/form-provider.local.php` в `.gitignore`), создаётся вручную на сервере с реальным ключом. В репозитории — только `api/form-provider.example.php` (placeholder `PASTE_ACCESS_KEY_HERE`).
+- Отправка: cURL при наличии, fallback `stream_context_create`. Поля в Web3Forms: `access_key`, `subject`=`【LINE Business OS】導入相談フォーム`, `from_name`=`IZUMI IT COMPANY`, `name`, `email`, `company`, `phone`, `business_type`, `store_count`, `staff_count`, `service`, `line_official`, `timeline`, `message`, `page`=`https://izumiit.com/contact.html`, `backup_email`=`konstantin.chvykov@gmail.com`.
+- Responses (JSON, `X-Content-Type-Options: nosniff`): success → 200 `{"ok":true}`; Web3Forms fail → 500 `send_failed`; validation fail → 422 `validation_error`; config missing → 500 `config_missing`; GET/не-POST → 405 `method_not_allowed`. Honeypot `website` заполнен → 200 `{"ok":true}` без отправки. PII в файлы/логи не пишется; детальные ошибки провайдера пользователю не показываются.
+
+### TASK 2 — Reduced contact-form friction
+
+- **Required** теперь только: お名前 (`name`), 会社名・店舗名 (`company`), メールアドレス (`email`), 現在の課題・相談内容 (`message`), プライバシー同意 (`privacy_consent`).
+- **Optional (`任意`)**: 電話番号, 業種, 店舗数, スタッフ数, LINE公式アカウントの有無, 希望する導入時期, 興味のあるサービス (чекбоксы). `required`-атрибуты сняты с этих полей в `contact.html`; бейджи `必須`→`任意`.
+- Service-группа опциональна; submit не блокируется без выбора; если `service[]` пуст, в Web3Forms уходит `未選択` (логика в `api/form.php`). Опция `まだ決まっていない` оставлена.
+- `assets/js/main.js`: `requiredFields` сокращён до name/company/email/message; убрана обязательная проверка service; сохранены формат email, maxlength message (1200), проверка consent; PII не логируется.
+- `api/form.php`: server-side требует только name/company/email/message/consent; остальные поля принимаются пустыми; email-формат и длина message проверяются.
+- Copy у формы усилен: «フォームは、分かる範囲だけで送信できます。詳しい店舗数・スタッフ数・LINE公式アカウントの状況は、初回相談で確認します。フォーム送信で問題がある場合は、izumi@izumiit.com まで直接ご連絡ください。»
+
+### TASK 3 — index 500社 (Web実績 vs SaaS実績)
+
+- Заголовок trust-карточки: `500社以上の支援実績` → `Web制作・開発領域で500社以上の支援実績`.
+- Тело сохранено + добавлен micro-disclaimer внутри карточки: «LINE Business OSの導入実績を示すものではありません。». `500社` не удалён, как SaaS-результат не подан, новых метрик нет.
+
+### TASK 4/5 — Copy cleanup + dedup (index/products/security/company)
+
+- Снижено хеджирование: `LINE 業務システム`→`LINE業務システム`, `小規模店舗 DX`→`小規模店舗DX`, `確認しやすい形へ`→`確認できる形へ`, `来店忘れリスクを軽減しやすくします`→`来店忘れ対策に役立つ導線を整えます`, `連絡漏れや誤操作を減らしやすくします`→`連絡漏れや誤操作を減らすための導線を整えます`, `現場に定着しやすい形を目指します`→`現場で使い続けられる形に整えます`, разнообразлены `配慮して設計しています` в `security.html` (`分けて管理します` / `権限を整理します` / `必要な範囲で取り扱います`). Новых технических контролей (шифрование/бэкапы/логи) НЕ добавлено; cert-disclaimer сохранён.
+- Дедупликация product lead: index Workforce/Booking — короткие benefit-формулировки; products Workforce/Booking — детальные feature-формулировки. Позиционирование и цены не менялись. Все дисклеймеры сохранены.
+- Запрещённые слова (給与計算/法定勤怠/税務/労務管理) остаются только в exclusion/disclaimer контексте.
+
+### TASK 6 — Technical polish
+
+- `contact.html`: header logo получил `aria-label="IZUMI IT COMPANY ホーム"` (консистентно с остальными страницами).
+- `index.html`: `main.js` перенесён из конца `<body>` (без defer) в `<head>` с `defer` — консистентно с products/security/company/contact.
+- `sitemap.xml`: к каждому public URL добавлен `<lastmod>2026-06-22</lastmod>`.
+
+### Server-side tasks (НЕ из репозитория — конфиг сервера)
+
+- **HTTP→HTTPS**: настроить nginx 301-редирект http→https (это серверная конфигурация, из репо не делается).
+- **HSTS**: включить `Strict-Transport-Security` **только после** подтверждения, что HTTPS работает корректно.
+- **Optional security headers**: `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `X-Frame-Options`/`Content-Security-Policy frame-ancestors` — по желанию на уровне nginx.
+- nginx из репозитория НЕ конфигурируется.
+
+### Manual upload list (после push)
+
+Загрузить на сервер в root:
+
+- `contact.html`
+- `assets/js/main.js`
+- `api/form.php`
+- `api/form-provider.example.php`
+- `index.html`
+- `products.html`
+- `security.html`
+- `company.html` (изменён)
+- `sitemap.xml`
+- `pricing.html` — только если менялся (в этой фазе НЕ менялся).
+- `handoff.md` — repo-only (на сервер заливать не обязательно).
+
+**НЕ загружать / НЕ коммитить:**
+
+- `api/form-provider.local.php` из репо — он создаётся **вручную на сервере** с реальным ключом (gitignored). Подтвердить, что файл уже существует на сервере с правильным `web3forms_access_key`.
+- QA-отчёты (`COPY_AUDIT_REPORT.md`, `QA_FULL_AUDIT_REPORT.md`) — если не нужны на сервере.
+
+### Live test command (после ручной загрузки)
+
+```bash
+# 1. GET → 405 JSON
+curl -i https://izumiit.com/api/form.php
+
+# 2. Валидный POST → 200 {"ok":true} (+ submission в Web3Forms dashboard, письмо на izumi@izumiit.com)
+curl -i -X POST https://izumiit.com/api/form.php \
+  -d "name=テスト太郎" \
+  -d "company=テスト店舗" \
+  -d "email=test@example.com" \
+  -d "message=導入相談のテストです" \
+  -d "privacy_consent=on"
+
+# 3. Невалидный POST (нет name/email/message) → 422 validation_error
+curl -i -X POST https://izumiit.com/api/form.php -d "company=テスト店舗"
+
+# 4. Honeypot заполнен → 200 {"ok":true}, но без реальной отправки
+curl -i -X POST https://izumiit.com/api/form.php \
+  -d "name=テスト太郎" -d "company=テスト店舗" \
+  -d "email=test@example.com" -d "message=テスト" \
+  -d "privacy_consent=on" -d "website=spam"
+```
+
+После: проверить Web3Forms dashboard (submission появился) и inbox/spam получателя (`izumi@izumiit.com`).
+
+### Forbidden claims check (Phase 2.4)
+
+- Grep по `*.html`/`*.php`/`*.xml` (`LINE公式認定 / ISO27001 / Pマーク / 法定勤怠対応 / 給与計算対応 / 税務対応 / 労務管理対応 / 売上保証 / no-show完全防止 / SaaS導入500社 / LINE Business OS 導入500社 / 1200+ / 99% / 4.8/5 / 削減工数 / 導入店舗数`): **0**.
+- `給与計算 / 法定勤怠 / 税務 / 労務管理` — только exclusion/disclaimer. `500社` — только Web制作・開発領域 + явный disclaimer на index и company. `/new/` ссылок нет. `ドラフト` / `法的助言` отсутствуют. `勤怠報告` как позитивная фича не используется (используется `勤務報告`).
+- Реальный Web3Forms access key в коммиченных файлах **отсутствует** (только в gitignored `api/form-provider.local.php`).
+
+### Остаточные риски / legal review (Phase 2.4)
+
+- **HTTP→HTTPS redirect + HSTS** остаются серверной задачей (nginx) — не выполнено из репо.
+- **Legal pages существенно не менялись** в этой фазе; остаются launch-draft и требуют сверки японским юристом до полного коммерческого масштаба (правовая форма «IZUMI IT COMPANY» в 特商法, достаточность 特商法 раскрытия адреса/телефона, ответственность за персональные данные стаффа/клиентов, условия LINE/внешних сервисов, потолок ответственности).
+- Доставляемость письма теперь зависит от Web3Forms (а не PHP `mail()`); подтвердить получение на `izumi@izumiit.com` после live-теста.
+- Live e2e (405/200/422/honeypot) и финальный mobile QA нужно повторить после ручной загрузки.
 
 ## Phase 2.3 — Public launch final hotfix (legal text / email / OGP)
 

@@ -113,11 +113,6 @@ document.addEventListener('DOMContentLoaded', function () {
       { name: 'name', label: 'お名前' },
       { name: 'company', label: '会社名・店舗名' },
       { name: 'email', label: 'メールアドレス' },
-      { name: 'business_type', label: '業種' },
-      { name: 'store_count', label: '店舗数' },
-      { name: 'staff_count', label: 'スタッフ数' },
-      { name: 'line_official', label: 'LINE公式アカウントの有無' },
-      { name: 'timeline', label: '希望する導入時期' },
       { name: 'message', label: '現在の課題・相談内容' }
     ];
 
@@ -149,12 +144,6 @@ document.addEventListener('DOMContentLoaded', function () {
       if (fieldValue('message').length > MESSAGE_MAX) {
         setFormMessage('相談内容は' + MESSAGE_MAX + '文字以内でご入力ください。', 'error');
         if (contactForm.elements.message) contactForm.elements.message.focus();
-        return;
-      }
-
-      var serviceInputs = contactForm.querySelectorAll('input[name="service[]"]:checked');
-      if (!serviceInputs.length) {
-        setFormMessage('興味のあるサービスを1つ以上お選びください。', 'error');
         return;
       }
 

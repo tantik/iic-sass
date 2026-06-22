@@ -20,3 +20,6 @@ old/**/*.sqlite
 .cursor/
 design-test/
 design-test-a/
+
+# Contact form provider secrets (never commit the real access key)
+api/form-provider.local.php

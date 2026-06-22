@@ -2797,3 +2797,87 @@ textarea {
     align-items: start;
   }
 }
+
+/* ============================================================
+   Company team trust section (Phase 2.2) — company.html #team
+   ============================================================ */
+.team-grid {
+  display: grid;
+  gap: clamp(1.75rem, 5vw, 3rem);
+}
+
+.team-copy .eyebrow {
+  margin-bottom: .8rem;
+}
+
+.team-copy h2 {
+  margin-bottom: 1rem;
+}
+
+.team-copy .lead {
+  margin-bottom: 1rem;
+}
+
+.team-copy p:last-child {
+  margin-bottom: 0;
+}
+
+.team-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(10px, 2vw, 16px);
+  min-width: 0;
+}
+
+.team-photo-main,
+.team-photo-card {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-brand-pale);
+  box-shadow: var(--shadow-sm);
+}
+
+.team-photo-main {
+  grid-column: 1 / -1;
+  aspect-ratio: 16 / 9;
+}
+
+.team-photo-card {
+  aspect-ratio: 4 / 3;
+}
+
+.team-photo-main img,
+.team-photo-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Bias the framing away from the partially cropped wall sign so it never
+   reads as a broken/cut logo. Operator can fine-tune this value. */
+.team-photo-office img {
+  object-position: center 62%;
+}
+
+.team-note {
+  margin: clamp(1.25rem, 3vw, 1.75rem) 0 0;
+  color: var(--color-muted);
+  font-size: .8rem;
+}
+
+@media (min-width: 820px) {
+  .team-grid {
+    grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+    align-items: center;
+  }
+}
+
+/* Stack multiple card links (home company trust panel) */
+.card-link-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}

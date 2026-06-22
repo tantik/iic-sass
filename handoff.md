@@ -16,7 +16,49 @@
 - Legal pages — публичный launch (Phase 2.3): публичное draft-предупреждение удалено; внутренний legal-risk note хранится только здесь в handoff.
 - Contact form: **Phase 2.4** — `api/form.php` теперь серверный **Web3Forms-прокси** (`contact.html` → `api/form.php` → `https://api.web3forms.com/submit`), без PHP `mail()`/`mb_send_mail`, без backend-framework/зависимостей/БД. Access key загружается только из `api/form-provider.local.php` (gitignored) или env `WEB3FORMS_ACCESS_KEY`; в commit ключ никогда не попадает. Подробности — в разделе «Phase 2.4» ниже.
 - Live root: https://izumiit.com/ (форма `POST` → `api/form.php`). Старый сайт только на `/old21062026/`.
-- Текущий этап: Phase 2.3 — Public launch legal text + contact email reliability + favicon/OGP deploy readiness.
+- Текущий этап: Phase 2.5 — Contact form переключён на Web3Forms **client-side mode** (см. ниже).
+
+## Phase 2.5 — Web3Forms client-side contact submission (2026-06-22)
+
+### Root cause (почему сменили архитектуру)
+
+- Web3Forms **free plan** отклоняет server-side / API запросы из PHP/curl:
+  - HTTP **403** «This method is not allowed. Use our API in client side or contact support with server IP address (Pro plan is required)».
+- Значит прежняя архитектура `contact.html → api/form.php → Web3Forms` **не работает** на free plan (требуется Pro / whitelisting server IP).
+
+### Решение
+
+- Перешли на официальный free-plan-совместимый поток **Web3Forms client-side mode**:
+  - `contact.html` / `assets/js/main.js` (браузер) → `https://api.web3forms.com/submit`.
+- PHP `mail()` НЕ используется. Server-side Web3Forms-прокси больше НЕ используется как активный поток.
+- Без framework / build system. Стек остаётся static HTML/CSS/JS + PHP.
+
+### Активный поток
+
+- `contact.html`: `<form action="https://api.web3forms.com/submit" method="post">`.
+- Hidden-поля в форме: `access_key` (client-side ключ Web3Forms — для free client-side mode допустимо его наличие в HTML), `subject`=`【LINE Business OS】導入相談フォーム`, `from_name`=`IZUMI IT COMPANY`, `page`=`https://izumiit.com/contact.html`.
+- Honeypot: визуальный `website` (сохранён) + Web3Forms `botcheck` (скрытый checkbox `display:none`).
+- `assets/js/main.js`: frontend-валидация (name/company/email/message/privacy_consent) сохранена; `service[]` опционально — если ничего не выбрано, в payload добавляется `service = "未選択"`; остальные optional-поля могут быть пустыми. Success-условие: `response.ok && (data.ok === true || data.success === true)`. При ошибке — общий японский текст (без технических деталей провайдера, без логирования PII). Submit-кнопка снова включается в finally. После успеха — inline success UI, `form.reset()`, сброс `started_at`.
+
+### api/form.php
+
+- **НЕ удалён.** В начало файла добавлен комментарий, что endpoint — неактивный fallback/reference (Web3Forms free plan отклоняет server-side PHP/curl).
+- `contact.html` больше НЕ маршрутизируется на `api/form.php`.
+- `api/form-provider.local.php` остаётся **gitignored** (реальный ключ); реальный ключ НЕ дублируется в `api/form.php` как активный поток.
+
+### Тестирование (ВАЖНО)
+
+- Тест выполняется **через браузерную форму**, НЕ через curl из PowerShell/сервера.
+- Прямой `curl https://api.web3forms.com/submit` может вернуть **403** — это ожидаемо (free plan разрешает client-side/browser, не server/curl).
+- После browser-submit проверить **Web3Forms Dashboard** + inbox/spam получателя.
+- Так как access key был раскрыт во время настройки, после финальной проверки **перегенерировать ключ** в Web3Forms и заменить его в `contact.html`.
+
+### Manual upload list (после push)
+
+- `contact.html`
+- `assets/js/main.js`
+- `handoff.md` — repo-only (на сервер заливать не обязательно).
+- `api/form.php` — опционально (остаётся как inactive fallback).
 
 ## Phase 2.4 — Web3Forms contact backend + conversion copy cleanup (2026-06-22)
 

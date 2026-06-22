@@ -157,18 +157,25 @@ document.addEventListener('DOMContentLoaded', function () {
       setSending(true);
       setFormMessage('送信しています。少々お待ちください。', 'info');
 
+      var payload = new FormData(contactForm);
+      var hasService = contactForm.querySelectorAll('input[name="service[]"]:checked').length > 0;
+      if (!hasService) {
+        payload.append('service', '未選択');
+      }
+
       fetch(contactForm.action, {
         method: 'POST',
-        body: new FormData(contactForm),
+        body: payload,
         headers: { 'Accept': 'application/json' }
       }).then(function (response) {
         return response.json().then(function (data) {
-          return { status: response.status, data: data };
+          return { ok: response.ok, data: data };
         }, function () {
-          return { status: response.status, data: null };
+          return { ok: response.ok, data: null };
         });
       }).then(function (result) {
-        if (result.status === 200 && result.data && result.data.ok === true) {
+        var data = result.data;
+        if (result.ok && data && (data.ok === true || data.success === true)) {
           contactForm.reset();
           if (startedAtField) startedAtField.value = String(Date.now());
           setFormMessage(SUCCESS_TEXT, 'success');

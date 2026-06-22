@@ -1,4 +1,8 @@
 <?php
+// NOTE: Active production contact form uses Web3Forms client-side mode.
+// Web3Forms free plan rejects server-side PHP/curl submissions.
+// This endpoint is retained only as fallback/reference.
+//
 // LINE Business OS — contact form handler (Web3Forms proxy).
 // Receives a POST from /contact.html, validates server-side, then forwards the
 // submission to the Web3Forms API server-side. The Web3Forms access key is

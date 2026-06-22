@@ -16,7 +16,35 @@
 - Legal pages — публичный launch (Phase 2.3): публичное draft-предупреждение удалено; внутренний legal-risk note хранится только здесь в handoff.
 - Contact form: **Phase 2.4** — `api/form.php` теперь серверный **Web3Forms-прокси** (`contact.html` → `api/form.php` → `https://api.web3forms.com/submit`), без PHP `mail()`/`mb_send_mail`, без backend-framework/зависимостей/БД. Access key загружается только из `api/form-provider.local.php` (gitignored) или env `WEB3FORMS_ACCESS_KEY`; в commit ключ никогда не попадает. Подробности — в разделе «Phase 2.4» ниже.
 - Live root: https://izumiit.com/ (форма `POST` → `api/form.php`). Старый сайт только на `/old21062026/`.
-- Текущий этап: Phase 2.7 — launch readiness cleanup (P0/P1). См. секцию ниже.
+- Текущий этап: Phase 2.8 — targeted legal text cleanup (company identity / privacy / terms / commercial disclosure). См. секцию ниже.
+
+## Phase 2.8 — Targeted legal text cleanup (2026-06-22)
+
+Целенаправленные правки legal/identity текста по подтверждённым решениям оператора. Сайт НЕ редизайнился, цены НЕ менялись, продуктовые названия и Workforce/Booking separation НЕ менялись, форма остаётся client-side (PHP НЕ реактивирован).
+
+### Изменения
+
+- `commercial-disclosure.html` (特商法): 販売事業者 → `IZUMI IT COMPANY OÜ`; добавлены 法人種別 (エストニア共和国法人（OÜ）), 登録番号 `14446722`, 設立 `2018年3月12日`; 運営責任者 `Roman Siedovolosyi` → `Izumi Chvykova`; 所在地/電話番号 — модель «請求があった場合、遅滞なく開示» (телефон + примечание, что текущий канал — email); добавлено примечание про disclose-on-request. Японский телефон/LINE/публичный адрес НЕ добавлены.
+- `company.html`: identity-правок не потребовалось — все упоминания «IZUMI IT COMPANY» здесь brand/marketing (hero, заголовки, trust), отдельной legal/company-data таблицы нет; юридическая identity живёт в 特商法. Estonia не усиливалась.
+- `privacy.html`: добавлено уточнение purpose-of-use (お問い合わせフォームで取得した情報の利用目的) + предупреждение про要配慮個人情報 (病歴・診断・施術記録等 не вводить в свободное поле формы). Web3Forms публично НЕ упомянут.
+- `terms.html`: добавлены/уточнены — A приоритет個別契約, B最低利用期間/初回3か月単位, C解約は次回更新日の30日前, D返金原則なし(重大な当社事由は協議), E新セクション「サポート」(メール/指定方法, без 24/7 гарантии), F契約終了後データ確認/返却/削除は個別契約・協議, G管轄は個別契約で定める. Tokyo/Estonia суд НЕ хардкодятся; 日本法 準拠 сохранён. Секции перенумерованы (добавлена サポート), 給与計算/法定勤怠/税務/労務管理 остаются только в exclusion (§3); liability cap §15 сохранён.
+- `security.html`: правок не потребовалось — нет ISO27001/Pマーク/сертификации/шифрования/бэкап/региональных claim; cert-disclaimer сохранён.
+
+### Web3Forms / contact (статус)
+
+- Web3Forms — **временное** решение; планируемая замена — внутренний PHP/mail handling.
+- Web3Forms публично НЕ упоминается в privacy-тексте, пока он не остаётся активным для активных продаж или этого не требует юридическая проверка.
+- Контактный канал сейчас — **только email** (`izumi@izumiit.com`). Японский номер пока не публичный. LINE-контакт добавить позже, после настройки официального LINE-канала.
+
+### old21062026 (оператор)
+
+- `old21062026` будет вручную удалён с сервера оператором.
+- После удаления проверить: `https://izumiit.com/old21062026/index.html` возвращает **404 или 410**.
+
+### Остаточные legal review items
+
+- 特商法: модель address/phone on-request должна быть подтверждена под реальную модель продаж.
+- Японская юридическая проверка всё ещё требуется до активных продаж (legal-форма OÜ в 特商法, ответственность за персональные/要配慮 данные, условия LINE/внешних сервисов, потолок ответственности).
 
 ## Phase 2.7 — Launch readiness cleanup (P0/P1) (2026-06-22)
 

@@ -11,6 +11,8 @@ mb_internal_encoding('UTF-8');
 
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
+// Non-secret deploy marker to confirm which handler version is live.
+header('X-Form-Handler-Version: web3forms-validation-fix');
 
 // ---- Configuration ---------------------------------------------------------
 const FROM_NAME      = 'IZUMI IT COMPANY';
@@ -43,18 +45,29 @@ function clean_text(string $value): string
 }
 
 /**
- * Resolve the Web3Forms access key. Prefers api/form-provider.local.php and
- * falls back to the WEB3FORMS_ACCESS_KEY environment variable. Returns '' when
- * no key can be found.
+ * Load the local provider config (api/form-provider.local.php). Returns an
+ * empty array when the file is missing or invalid. Never exposed to clients.
  */
-function resolve_access_key(): string
+function load_config(): array
 {
     $configPath = __DIR__ . '/form-provider.local.php';
     if (is_file($configPath)) {
         $config = require $configPath;
-        if (is_array($config) && !empty($config['web3forms_access_key'])) {
-            return trim((string) $config['web3forms_access_key']);
+        if (is_array($config)) {
+            return $config;
         }
+    }
+    return [];
+}
+
+/**
+ * Resolve the Web3Forms access key from config, falling back to the
+ * WEB3FORMS_ACCESS_KEY environment variable. Returns '' when none is found.
+ */
+function resolve_access_key(array $config): string
+{
+    if (!empty($config['web3forms_access_key'])) {
+        return trim((string) $config['web3forms_access_key']);
     }
 
     $envKey = getenv('WEB3FORMS_ACCESS_KEY');
@@ -63,6 +76,41 @@ function resolve_access_key(): string
     }
 
     return '';
+}
+
+/**
+ * Return the first non-empty, trimmed POST value among the given field names.
+ * Supports backward-compatible aliases (e.g. name OR fullName).
+ */
+function post_first(array $names): string
+{
+    foreach ($names as $name) {
+        if (isset($_POST[$name]) && is_string($_POST[$name])) {
+            $value = clean_text($_POST[$name]);
+            if ($value !== '') {
+                return $value;
+            }
+        }
+    }
+    return '';
+}
+
+/**
+ * Treat consent as given when any consent field holds an accepted truthy value
+ * (on / 1 / true / yes). Returns true only on an explicit accepted value.
+ */
+function consent_given(): bool
+{
+    $accepted = ['on', '1', 'true', 'yes'];
+    foreach (['privacy_consent', 'privacy'] as $name) {
+        if (isset($_POST[$name]) && is_string($_POST[$name])) {
+            $value = strtolower(clean_text($_POST[$name]));
+            if (in_array($value, $accepted, true)) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 /**
@@ -142,18 +190,24 @@ if (clean_text((string)($_POST['website'] ?? '')) !== '') {
     respond(200, ['ok' => true]);
 }
 
-// Collect fields.
-$name        = clean_text((string)($_POST['name'] ?? ''));
-$company     = clean_text((string)($_POST['company'] ?? ''));
-$email       = clean_text((string)($_POST['email'] ?? ''));
-$phone       = clean_text((string)($_POST['phone'] ?? ''));
-$businessType= clean_text((string)($_POST['business_type'] ?? ''));
-$storeCount  = clean_text((string)($_POST['store_count'] ?? ''));
-$staffCount  = clean_text((string)($_POST['staff_count'] ?? ''));
-$lineOfficial= clean_text((string)($_POST['line_official'] ?? ''));
-$timeline    = clean_text((string)($_POST['timeline'] ?? ''));
-$message     = clean_text((string)($_POST['message'] ?? ''));
-$consent     = clean_text((string)($_POST['privacy_consent'] ?? ''));
+// Load local config once (secrets + optional debug token).
+$config = load_config();
+
+// Collect fields. Required fields accept backward-compatible aliases so the
+// handler keeps working if contact.html still uses older field names.
+$name        = post_first(['name', 'fullName']);
+$company     = post_first(['company', 'companyName']);
+$email       = post_first(['email']);
+$message     = post_first(['message', 'inquiry']);
+$consent     = consent_given();
+
+// Optional fields (accepted empty).
+$phone       = post_first(['phone']);
+$businessType= post_first(['business_type']);
+$storeCount  = post_first(['store_count']);
+$staffCount  = post_first(['staff_count']);
+$lineOfficial= post_first(['line_official']);
+$timeline    = post_first(['timeline']);
 
 $services = [];
 if (isset($_POST['service']) && is_array($_POST['service'])) {
@@ -167,26 +221,35 @@ if (isset($_POST['service']) && is_array($_POST['service'])) {
 
 // Server-side validation. Only name / company / email / message / consent are
 // required; the remaining fields are optional and accepted empty.
-$errors = [];
-if ($name === '')    { $errors[] = 'name'; }
-if ($company === '') { $errors[] = 'company'; }
-if ($email === '')   { $errors[] = 'email'; }
-if ($message === '') { $errors[] = 'message'; }
-if ($consent === '') { $errors[] = 'privacy_consent'; }
+$missing = [];
+if ($name === '')    { $missing[] = 'name'; }
+if ($company === '') { $missing[] = 'company'; }
+if ($email === '')   { $missing[] = 'email'; }
+if ($message === '') { $missing[] = 'message'; }
+if ($consent !== true) { $missing[] = 'privacy_consent'; }
 
 if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $errors[] = 'email_format';
+    $missing[] = 'email_format';
 }
 if (mb_strlen($message) > MESSAGE_MAX) {
-    $errors[] = 'message_length';
+    $missing[] = 'message_length';
 }
 
-if (count($errors) > 0) {
-    respond(422, ['ok' => false, 'message' => 'validation_error']);
+if (count($missing) > 0) {
+    $response = ['ok' => false, 'message' => 'validation_error'];
+
+    // Optional, token-gated debug: report only missing FIELD NAMES (no values).
+    $debugToken = isset($config['debug_token']) ? (string) $config['debug_token'] : '';
+    $providedToken = clean_text((string)($_POST['debug_token'] ?? ''));
+    if ($debugToken !== '' && $providedToken !== '' && hash_equals($debugToken, $providedToken)) {
+        $response['missing'] = $missing;
+    }
+
+    respond(422, $response);
 }
 
 // Resolve the Web3Forms access key (local config or env).
-$accessKey = resolve_access_key();
+$accessKey = resolve_access_key($config);
 if ($accessKey === '') {
     respond(500, ['ok' => false, 'message' => 'config_missing']);
 }

@@ -16,7 +16,43 @@
 - Legal pages — публичный launch (Phase 2.3): публичное draft-предупреждение удалено; внутренний legal-risk note хранится только здесь в handoff.
 - Contact form: **Phase 2.4** — `api/form.php` теперь серверный **Web3Forms-прокси** (`contact.html` → `api/form.php` → `https://api.web3forms.com/submit`), без PHP `mail()`/`mb_send_mail`, без backend-framework/зависимостей/БД. Access key загружается только из `api/form-provider.local.php` (gitignored) или env `WEB3FORMS_ACCESS_KEY`; в commit ключ никогда не попадает. Подробности — в разделе «Phase 2.4» ниже.
 - Live root: https://izumiit.com/ (форма `POST` → `api/form.php`). Старый сайт только на `/old21062026/`.
-- Текущий этап: Phase 2.5 — Contact form переключён на Web3Forms **client-side mode** (см. ниже).
+- Текущий этап: Phase 2.6 — исправлена обработка success-ответа Web3Forms (см. ниже).
+
+## Phase 2.6 — Fix Web3Forms success state handling (2026-06-22)
+
+### Root cause
+
+- Web3Forms доставлял письмо (запрос проходил, email приходил), но сайт показывал общий error.
+- Причина в `assets/js/main.js`: success засчитывался **только** если `response.json()` успешно распарсился И `data.success === true || data.ok === true`. Если Web3Forms возвращал ответ с не-JSON / пустым телом (или `response.json()` падал по любой причине), `data` становился `null`, и при `response.ok === true` код всё равно уходил в error-ветку. Т.е. UI неверно интерпретировал успешную доставку как ошибку.
+
+### Fix (изменён только `assets/js/main.js`)
+
+- JSON парсится **только** если `content-type` ответа содержит `application/json` (иначе `data = null`, без падения на `response.json()`).
+- Success-условие: `response.ok && (data.success === true || data.ok === true)`.
+- **Web3Forms soft-success**: для эндпоинта `*.web3forms.com` — если `response.ok` и тело не-JSON/пустое (`data === null`) и нет явного failure, считаем success (письмо могло уйти).
+- Failure: `!response.ok` ИЛИ распарсенный `data.success === false`.
+- `access_key` гарантированно включается из hidden-инпута (добавляется в `FormData`, если по какой-то причине отсутствует).
+- Если `service[]` не выбран → в payload добавляется `service = "未選択"` (как и было).
+- При успехе: inline success UI (без alert), `form.reset()`, сброс `started_at`, очистка error-состояния. Submit-кнопка всегда снова включается в `finally`.
+- Debug без PII: `console.warn('Contact form submission failed', { status, success })` только при ошибке. В консоль НЕ пишутся name/email/message/company/access_key. Технические детали провайдера пользователю не показываются.
+
+### Browser QA (локальный http.server, fetch замокан, без реальной отправки)
+
+| Сценарий | Ожидание | Результат |
+|----------|----------|-----------|
+| Пустые required-поля | Блок до submit, fetch не вызывается | PASS (`__fetchCalled=false`, текст с `必須`) |
+| Валидный submit + JSON `{success:true}` | Success UI + reset | PASS (`is-success`, форма очищена; `service` есть в payload) |
+| `response.ok` + пустое/не-JSON тело | Soft-success | PASS (`is-success`) |
+| `400` + `{success:false}` | Generic error, без PII в консоли | PASS (`is-error`, в консоли только `{status, success}`) |
+
+- FormData-ключи (Scenario B): `access_key, subject, from_name, page, name, company, email, phone, business_type, store_count, staff_count, line_official, timeline, message, website, started_at, privacy_consent, service`.
+- Реальную доставку (письмо на `izumi@izumiit.com`) подтвердить вручную одной отправкой с live-сайта после загрузки + проверить Web3Forms dashboard/inbox/spam.
+
+### Manual upload list (после push)
+
+- `assets/js/main.js`
+- `contact.html` — НЕ менялся в этой фазе (уже корректен: action=web3forms, method=post, hidden `access_key`, required name/company/email/message/privacy_consent, `service[]` опционально). Перезаливать не обязательно.
+- `handoff.md` — repo-only.
 
 ## Phase 2.5 — Web3Forms client-side contact submission (2026-06-22)
 

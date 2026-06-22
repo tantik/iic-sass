@@ -158,31 +158,49 @@ document.addEventListener('DOMContentLoaded', function () {
       setFormMessage('送信しています。少々お待ちください。', 'info');
 
       var payload = new FormData(contactForm);
+      if (!payload.get('access_key')) {
+        var accessKeyField = contactForm.elements['access_key'];
+        if (accessKeyField && accessKeyField.value) payload.append('access_key', accessKeyField.value);
+      }
       var hasService = contactForm.querySelectorAll('input[name="service[]"]:checked').length > 0;
       if (!hasService) {
         payload.append('service', '未選択');
       }
+
+      var isWeb3Forms = /(^|\.)web3forms\.com/i.test(contactForm.action);
 
       fetch(contactForm.action, {
         method: 'POST',
         body: payload,
         headers: { 'Accept': 'application/json' }
       }).then(function (response) {
-        return response.json().then(function (data) {
-          return { ok: response.ok, data: data };
-        }, function () {
-          return { ok: response.ok, data: null };
-        });
+        var contentType = response.headers.get('content-type') || '';
+        if (contentType.indexOf('application/json') !== -1) {
+          return response.json().then(function (data) {
+            return { ok: response.ok, status: response.status, data: data };
+          }, function () {
+            return { ok: response.ok, status: response.status, data: null };
+          });
+        }
+        return { ok: response.ok, status: response.status, data: null };
       }).then(function (result) {
         var data = result.data;
-        if (result.ok && data && (data.ok === true || data.success === true)) {
+        var explicitSuccess = result.ok && data && (data.success === true || data.ok === true);
+        var explicitFailure = !result.ok || (data && data.success === false);
+        // Web3Forms can deliver successfully while returning a non-JSON/empty
+        // body, so an OK response without an explicit failure counts as success.
+        var web3FormsSoftSuccess = isWeb3Forms && result.ok && !data;
+
+        if (explicitSuccess || (web3FormsSoftSuccess && !explicitFailure)) {
           contactForm.reset();
           if (startedAtField) startedAtField.value = String(Date.now());
           setFormMessage(SUCCESS_TEXT, 'success');
         } else {
+          console.warn('Contact form submission failed', { status: result.status, success: data && data.success });
           setFormMessage(ERROR_TEXT, 'error');
         }
       }, function () {
+        console.warn('Contact form submission failed', { status: 0, success: undefined });
         setFormMessage(ERROR_TEXT, 'error');
       }).then(function () {
         setSending(false);
